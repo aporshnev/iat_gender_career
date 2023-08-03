@@ -133,10 +133,13 @@ p_UK_clean<- filter(  p_UK, !is.na(D_biep.Male_Career_all) &
                       !( log(p_UK$Mn_RT_all_3467)<6| log(p_UK$Mn_RT_all_3467)>7.5 ) &
                       p_UK$PCT_error_3467 <= 10 &
                       p_UK$age>17)
+
 t_UK_clean<- filter(t_data, session_id %in% p_UK_clean$session_id)
+
+# added new variable - migration, than Country of residence "UK" not the country of origin "all others"
 p_UK_clean$country_mig<-p_UK_clean$countrycit!="UK"
 c_vars= c('sex', 'Order', 'edu', 'ethnic', 'politicalid_6', "country_mig", "major")
-n_vars=c('age', 'Mn_RT_all_3467', 'PCT_error_3467')
+n_vars=c('age', 'Mn_RT_all_3467', 'PCT_error_3467', 'D_biep.Male_Career_all')
 
 for (i in c_vars){
   print(kable(table(p_UK_clean[,i]), caption = i))}
@@ -155,5 +158,8 @@ exp_vars = c("assocareer",
 "numgirls",
 "planchildren")
 kable(describe(p_UK_clean[,exp_vars]), caption = "Explicit attitudes variables")
+
+write.csv(p_UK_clean[, c(c_vars, n_vars, exp_vars)], "p_UK_clean.csv", row.names = FALSE)
+write.csv(t_UK_clean, "t_UK_clean.csv", row.names = FALSE)
 ```
 
