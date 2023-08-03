@@ -1,0 +1,159 @@
+---
+title: "IAT Gender Career 2005"
+author: "Alexander Porshnev"
+date: "2023-08-02"
+output: html_document
+---
+
+```{r setup, include=FALSE, echo = FALSE}
+library(knitr)
+library(dplyr)
+library(psych)
+
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+# Gender & Career experiment  IAT 2005-2022 (https://osf.io/abxq7/)
+
+IAT task:
+
+Female stimuli are: Rebecca, Michelle, Emily, Julia, Anna
+
+Male stimuli are: Ben, Paul, Daniel, John, Jeffrey
+
+Career stimuli are: Career, Corporation, Salary, Office, Professional, Management, Business
+
+Family stimuli are: Wedding, Marriage, Parents, Relatives, Family, Home, Children
+
+
+# Datasets & Variables
+
+```{r download datasets}
+setwd("C:/Alex/Maynooth/IAT/Gender-Career/Datasets/RAW_Preprocessed/2005")
+#load participants data
+
+p_data <- read.csv("Gender-Career IAT.public.2005.csv", header = TRUE, sep =",")
+#load trial data
+t_data <-read.csv("iat_2005.txt", header = TRUE, sep = "\t")
+
+kable(names(p_data), caption = "Participants dataset variables", col.names = "")
+
+kable(names(t_data), caption = "TRIAL dataset variables", col.names = "")
+
+kable(rbind(
+  c("Np - participants in Gender-Career IAT.public.2005.csv", length(p_data$session_id)),
+  c("Nt - trials in iat_2005.txt", length(t_data$session_id)),    c("trials per participant", 200), 
+  c("expected Np*200 ", length(p_data$session_id)*200),
+  c("missing", length(p_data$session_id)*200 - length(t_data$session_id) )
+            ), caption = "N in datasets")
+```
+# Check mean RT times calculations
+```{r RT calculations}
+res <- t_data %>% filter(block_number == 2) %>% group_by(session_id) %>% summarize(M_block3 = mean(trial_latency))
+by <- join_by(session_id)
+check_data<-left_join(p_data[,c('session_id', 'Mn_RT_all_3' )], res, by)
+
+res <- t_data %>% filter(block_number == 3) %>% group_by(session_id) %>% summarize(M_block4 = mean(trial_latency))
+by <- join_by(session_id)
+check_data<-left_join(p_data[,c('session_id', 'Mn_RT_all_4' )], res, by)
+
+res <- t_data %>% filter(block_number == 5) %>% group_by(session_id) %>% summarize(M_block6 = mean(trial_latency))
+by <- join_by(session_id)
+check_data<-left_join(p_data[,c('session_id', 'Mn_RT_all_6' )], res, by)
+
+res <- t_data %>% filter(block_number == 6) %>% group_by(session_id) %>% summarize(M_block7 = mean(trial_latency))
+by <- join_by(session_id)
+check_data<-left_join(p_data[,c('session_id', 'Mn_RT_all_7' )], res, by)
+
+res <- t_data %>% filter(block_number %in% c(2,3,5,6)) %>% group_by(session_id) %>% summarize(M_block3467 = mean(trial_latency))
+by <- join_by(session_id)
+check_data<-left_join(p_data[,c('session_id', 'Mn_RT_all_3467' )], res, by)
+```
+
+# Check D calculations 
+
+```{r calculation D}
+#mean for devided by sd 
+
+res3 <- t_data %>% filter(block_number == 2) %>% group_by(session_id) %>% summarize(M_block3 = mean(trial_latency))
+res6 <- t_data %>% filter(block_number == 5) %>% group_by(session_id) %>% summarize(M_block6 = mean(trial_latency))
+res36sd <- t_data %>% filter(block_number %in% c(2,5)) %>% group_by(session_id) %>% summarize(sd36 = sd(trial_latency))
+
+by <- join_by(session_id)
+check_data<-left_join(res3, res6, by)
+check_data<-left_join(check_data, res36sd, by)
+check_data$D<-(check_data$M_block3-check_data$M_block6)/check_data$sd36
+
+head(check_D<-left_join(p_data[,c('session_id', 'D_biep.Male_Career_36' )], check_data, by))
+```
+
+# Check if UK participants available
+
+```{r UK participants}
+kable(head(sort(table(p_data$countryres), decreasing = TRUE),10), caption = "Top 10 participants' countries")
+p_UK<- filter(p_data, countryres=="UK")
+kable(table(!is.na(p_UK$D_biep.Male_Career_all)), caption = "Number of participants with D calculated ")
+p_UK_clean<- filter(p_UK, !is.na(D_biep.Male_Career_all))
+kable(table(p_UK_clean$sex), caption = "Disribution by gender: UK participans& D calculated")
+```
+
+# Description of UK participants
+
+```{r , results = 'asis'}
+p_UK_clean<- filter(  p_UK, !is.na(D_biep.Male_Career_all) & 
+                      countryres=="UK" & 
+                      p_UK$sex %in% c("m","f"))
+t_UK_clean<- filter(t_data, session_id %in% p_UK_clean$session_id)
+
+res_err <- t_UK_clean %>% filter(block_number %in% c(2,3,5,6)) %>% group_by(session_id) %>% summarize(errors = sum(trial_error), n = n())
+res_err$PCT_3467<-res_err$errors/res_err$n*100
+
+
+by <- join_by(session_id)
+check_data<-right_join(p_data[c("session_id", 'PCT_error_3467')], res_err, by)
+kable(head(check_data))
+
+kable(table(check_data$errors<12)) #errors rate 10%
+hist(log(p_UK_clean$Mn_RT_all_3467), n =30)
+kable(describe(check_data$errors), caption = "Errors in blocks 3,4,6,7")
+
+p_UK_clean$log_RT3467<-log(p_UK_clean$Mn_RT_all_3467) # probably we need to remove outliers 323ms (has many errors) and 2100ms (probably can keep) 
+kable(table(p_UK_clean$log_RT3467<6 | p_UK_clean$log_RT3467>7.5))
+p_UK_clean$Mn_RT_all_3467[p_UK_clean$log_RT3467<6 | p_UK_clean$log_RT3467>7.5]
+kable(describe(p_UK_clean$Mn_RT_all_3467), caption = "Mean Reaction time for blocks 3,4,6,7")
+
+#age exclude participants <18
+#education 1. elementary school, 2 junior high - exclude
+#important variable country Country/Region of Primary Citizenship probably we should focus on it
+# countrycit + variable  countrycit==countryres?
+
+p_UK_clean<- filter(  p_UK, !is.na(D_biep.Male_Career_all) & 
+                      countryres=="UK" & 
+                      p_UK$sex %in% c("m","f") &
+                      !( log(p_UK$Mn_RT_all_3467)<6| log(p_UK$Mn_RT_all_3467)>7.5 ) &
+                      p_UK$PCT_error_3467 <= 10 &
+                      p_UK$age>17)
+t_UK_clean<- filter(t_data, session_id %in% p_UK_clean$session_id)
+p_UK_clean$country_mig<-p_UK_clean$countrycit!="UK"
+c_vars= c('sex', 'Order', 'edu', 'ethnic', 'politicalid_6', "country_mig", "major")
+n_vars=c('age', 'Mn_RT_all_3467', 'PCT_error_3467')
+
+for (i in c_vars){
+  print(kable(table(p_UK_clean[,i]), caption = i))}
+
+
+kable(describe(p_UK_clean[,n_vars]), caption = "Numeric variables")
+# No data to connect sessions - previous_session_id
+# No data to connect user_id 
+
+exp_vars = c("assocareer",
+"assofamily",
+"impcareer",
+"impfamily",
+"havechildren",
+"numboys",
+"numgirls",
+"planchildren")
+kable(describe(p_UK_clean[,exp_vars]), caption = "Explicit attitudes variables")
+```
+
