@@ -117,7 +117,7 @@ kable(table(check_data$errors<12)) #errors rate 10%
 hist(log(p_UK_clean$Mn_RT_all_3467), n =30)
 kable(describe(check_data$errors), caption = "Errors in blocks 3,4,6,7")
 
-p_UK_clean$log_RT3467<-log(p_UK_clean$Mn_RT_all_3467) # probably we need to remove outliers 323ms (has many errors) and 2100ms (probably can keep) 
+p_UK_clean$log_RT3467<-log(p_UK_clean$Mn_RT_all_3467) # probably we need to remove outliers 323ms (has many errors) and 2100ms (probably can keep) Greenwald et al. have frame 300ms to 3000ms (and trucate all ouliers to the boundaries) 
 kable(table(p_UK_clean$log_RT3467<6 | p_UK_clean$log_RT3467>7.5))
 p_UK_clean$Mn_RT_all_3467[p_UK_clean$log_RT3467<6 | p_UK_clean$log_RT3467>7.5]
 kable(describe(p_UK_clean$Mn_RT_all_3467), caption = "Mean Reaction time for blocks 3,4,6,7")
@@ -159,7 +159,48 @@ exp_vars = c("assocareer",
 "planchildren")
 kable(describe(p_UK_clean[,exp_vars]), caption = "Explicit attitudes variables")
 
-write.csv(p_UK_clean[, c(c_vars, n_vars, exp_vars)], "p_UK_clean.csv", row.names = FALSE)
+write.csv(p_UK_clean, "p_UK_clean.csv", row.names = FALSE)
 write.csv(t_UK_clean, "t_UK_clean.csv", row.names = FALSE)
+
+```
+```{r, results= 'asis'}
+d_calculations<- function(t_data, p_data, block1, block2,d_var = "D_biep.Male_Career_36"){
+
+res1 <- t_data %>% filter(block_number %in% block1) %>% group_by(session_id) %>% summarize(M_block1 = mean(trial_latency), )
+
+res2 <- t_data %>% filter(block_number %in% block2) %>% group_by(session_id) %>% summarize(M_block2 = mean(trial_latency), )
+
+res12sd <- t_data %>% filter(block_number %in% c(block1, block2)) %>% group_by(session_id) %>% summarize(sd12 = sd(trial_latency))
+
+by = join_by(session_id)
+check_data<-left_join(res1, res2, by)
+check_data<-left_join(check_data, res12sd, by)
+check_data$D<-(check_data$M_block1-check_data$M_block2)/(check_data$sd12)
+p_data$order_sign<- ifelse(p_data$Order==2,1,-1)
+
+check_data_res<-left_join(p_data[,c("session_id", d_var, "order_sign" )], check_data[,c("D", "session_id")], by)
+check_data_res$D<-check_data_res$D*check_data_res$order_sign
+check_data_res<-check_data_res[,-3]
+
+print(kable(head(check_data_res), caption = paste0("Similar values (top 10) from ",
+                                                   table(check_data_res$D-check_data_res[, c(d_var)]<0.01)[2])
+            ))
+
+#print(kable(table(check_data_res$D-check_data_res[, c(d_var)]<0.01), caption = "Cross-tab similar vs different values"))
+print(kable(head(check_data_res[((check_data_res$D-check_data_res[,c(d_var)])>0.01),]), caption = paste0(" Differences, top 10  from ",  
+table(check_data_res$D-check_data_res[, c(d_var)]<0.01)[1])))
+}
 ```
 
+# D - comparison  
+D_biep.Male_Career - variable calculated for each participant in pre-processed file
+D - calculated from raw data (M1- M2)/sd(12)
+
+```{r, results= 'asis'}
+print("Block 3 vs 6")
+d_calculations(t_UK_clean, p_UK_clean, c(2), c(5))
+print("Block 4 vs 7")
+d_calculations(t_UK_clean, p_UK_clean, c(3), c(6), d_var = "D_biep.Male_Career_47")
+print("Blocks 3&4 vs 6&7")
+d_calculations(t_UK_clean, p_UK_clean, c(2,3), c(6,5), d_var = "D_biep.Male_Career_all")
+```
