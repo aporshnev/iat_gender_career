@@ -180,7 +180,7 @@ p_data$order_sign<- ifelse(p_data$Order==2,1,-1)
 
 check_data_res<-left_join(p_data[,c("session_id", d_var, "order_sign" )], check_data[,c("D", "session_id")], by)
 check_data_res$D<-check_data_res$D*check_data_res$order_sign
-check_data_res<-check_data_res[,-3]
+check_data_res<-check_data_res[,-3] #remove additional sign column
 
 print(kable(head(check_data_res), caption = paste0("Similar values (top 10) from ",
                                                    table(check_data_res$D-check_data_res[, c(d_var)]<0.01)[2])
@@ -189,8 +189,10 @@ print(kable(head(check_data_res), caption = paste0("Similar values (top 10) from
 #print(kable(table(check_data_res$D-check_data_res[, c(d_var)]<0.01), caption = "Cross-tab similar vs different values"))
 print(kable(head(check_data_res[((check_data_res$D-check_data_res[,c(d_var)])>0.01),]), caption = paste0(" Differences, top 10  from ",  
 table(check_data_res$D-check_data_res[, c(d_var)]<0.01)[1])))
+return (check_data_res)
 }
 ```
+
 
 # D - comparison  
 D_biep.Male_Career - variable calculated for each participant in pre-processed file
@@ -198,9 +200,20 @@ D - calculated from raw data (M1- M2)/sd(12)
 
 ```{r, results= 'asis'}
 print("Block 3 vs 6")
-d_calculations(t_UK_clean, p_UK_clean, c(2), c(5))
+d1 <- d_calculations(t_UK_clean, p_UK_clean, c(2), c(5))
 print("Block 4 vs 7")
-d_calculations(t_UK_clean, p_UK_clean, c(3), c(6), d_var = "D_biep.Male_Career_47")
+d2 <- d_calculations(t_UK_clean, p_UK_clean, c(3), c(6), d_var = "D_biep.Male_Career_47")
 print("Blocks 3&4 vs 6&7")
-d_calculations(t_UK_clean, p_UK_clean, c(2,3), c(6,5), d_var = "D_biep.Male_Career_all")
+d3<-d_calculations(t_UK_clean, p_UK_clean, c(2,3), c(6,5), d_var = "D_biep.Male_Career_all")
+names(d3)[3]<-"D_3467"
+by = join_by(session_id)
+check_data_res<-left_join(d1, d2, by)
+check_data_res<-left_join(d3, check_data_res, by)
+
+check_data_res$D_mean<-(check_data_res$D.x+check_data_res$D.y)/2
+names(check_data_res)
+kable(head(check_data_res[,c("D_biep.Male_Career_all","D_mean","D_3467")]), caption = "Comparison of original D and Dmean from calculations")
+print(kable(head(check_data_res[((check_data_res$D_mean-check_data_res[,c("D_biep.Male_Career_all")])>0.01),]), caption = paste0(" Differences, top 10  from ",  
+table(check_data_res$D_mean-check_data_res[, c("D_biep.Male_Career_all","D_mean","D_3467")]<0.01)[1])))
+
 ```
