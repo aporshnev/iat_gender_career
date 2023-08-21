@@ -1,0 +1,75 @@
+session_id,Seesion ID
+D_biep.Male_Career_all,Overall IAT D score
+D_biep.Male_Career_36,IAT D score of block 3 and 6
+D_biep.Male_Career_47,IAT D score of block 4 and 7
+Order,order of combined tasks
+Side_Career_34,Side where Career stimuli was first presented in IAT
+Side_Male_34,Side where Male stimuli was first presented in IAT
+Mn_RT_all_3467,Average latency of combined-task blocks
+N_3467,total number of trials in combined-task blocks
+PCT_error_3467,% of error in combined-task blocks
+Mn_RT_all_3,Mean latency of all trials in block 3
+Mn_RT_all_4,Mean latency of all trials in block 4
+Mn_RT_all_6,Mean latency of all trials in block 6
+Mn_RT_all_7,Mean latency of all trials in block 7
+SD_all_3,Standard Deviation of latency of all trials in block 3
+SD_all_4,Standard Deviation of latency of all trials in block 4
+SD_all_6,Standard Deviation of latency of all trials in block 6
+SD_all_7,Standard Deviation of latency of all trials in block 7
+pct_300,% of latencies below 300 ms
+pct_400,% of latencies below 400 ms
+pct_2K,% of latencies below 2000 ms
+pct_3K,% of latencies below 3000 ms
+pct_4K,% of latencies below 4000 ms
+N_3,Number of trials in block 3
+N_4,Number of trials in block 4
+N_5,Number of trials in block 5
+N_6,Number of trials in block 6
+N_7,Number of trials in block 7
+Mn_RT_correct_3,Mean latency of correct trials in block 3
+Mn_RT_correct_4,Mean latency of correct trials in block 4
+Mn_RT_correct_6,Mean latency of correct trials in block 6
+Mn_RT_correct_7,Mean latency of correct trials in block 7
+SD_correct_3,Standard Deviation of latency of correct trials in block 3
+SD_correct_4,Standard Deviation of latency of correct trials in block 4
+SD_correct_6,Standard Deviation of latency of correct trials in block 6
+SD_correct_7,Standard Deviation of latency of correct trials in block 7
+N_ERROR_3,Number of errors in block 3
+N_ERROR_4,Number of errors in block 4
+N_ERROR_6,Number of errors in block 6
+N_ERROR_7,Number of errors in block 7
+age,Age
+num,How many IATs have you previously performed?
+sex,Gender
+ethnic,Ethnicity
+countrycit,Country/Region of Primary Citizenship
+countryres,Country/Region of Residence
+edu,original Education Level data
+edu_13,edu with a 13-point scale
+edu_14,edu with a 14-point scale
+major,Major
+politicalid,original Political Identity
+politicalid_6,politicalid with a 6-point scale
+STATE,2-letter State name for US residents
+CountyNo,County No. for US residents
+MSANo,Metropolitan Statistical Area No. for US residents
+MSAName,Metropolitan Statistical Area Name for US residents
+assocareer,How strongly do you associate career and family with males and females? Career
+assofamily,How strongly do you associate career and family with males and females? Family
+impcareer,How personally important are these domains to you? Career
+impfamily,How personally important are these domains to you? Family
+havechildren,Do you have children?
+numboys,How many boys?
+numgirls,How many girls?
+planchildren,Do you plan to have children?
+user_id,user id if registered
+study_name,name of study
+session_status,whether subject completed the study or not
+previous_session_id,previous session id if subject toke another PI study within 15 min in the same browser
+previous_session_schema,type  of the previous study
+month,Month of the session date
+day,Day of the session date
+year,Year of the session date
+hour,Hour of the session date (24h format)
+weekday,Weekday of the session date
+date,Session date in SPSS Date format
