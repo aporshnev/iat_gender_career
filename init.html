@@ -1268,6 +1268,22 @@ gender</caption>
 </tr>
 </tbody>
 </table>
+</div>
+<div id="suggested-data-cleaning-filters" class="section level1">
+<h1>Suggested data cleaning filters</h1>
+<p>D_biep.Male_Career_all: D != NA</p>
+<p>countryres: country of residence UK</p>
+<p>sex: not empty field</p>
+<p>Mn_RT_all_3467: mean RT outliers (log lover than 6 or higher than
+7.5)</p>
+<p>PCT: less than 10% errors in blocks - 3467</p>
+<p>age: young partipants (&lt;18)</p>
+<p>edu: not in “elementary school” or “junior high”</p>
+<p>added variable</p>
+<p>country_mig &lt;- countrycit != “UK”</p>
+</div>
+<div id="descriptive-statitics-for-uk---2005-clean-sample" class="section level1">
+<h1>Descriptive statitics for UK - 2005 clean sample</h1>
 <table>
 <caption>sex</caption>
 <thead>
@@ -1279,11 +1295,11 @@ gender</caption>
 <tbody>
 <tr class="odd">
 <td align="left">f</td>
-<td align="right">229</td>
+<td align="right">166</td>
 </tr>
 <tr class="even">
 <td align="left">m</td>
-<td align="right">92</td>
+<td align="right">76</td>
 </tr>
 </tbody>
 </table>
@@ -1298,11 +1314,11 @@ gender</caption>
 <tbody>
 <tr class="odd">
 <td align="left">1</td>
-<td align="right">158</td>
+<td align="right">118</td>
 </tr>
 <tr class="even">
 <td align="left">2</td>
-<td align="right">163</td>
+<td align="right">124</td>
 </tr>
 </tbody>
 </table>
@@ -1317,27 +1333,27 @@ gender</caption>
 <tbody>
 <tr class="odd">
 <td align="left">1</td>
-<td align="right">7</td>
+<td align="right">6</td>
 </tr>
 <tr class="even">
 <td align="left">2</td>
-<td align="right">20</td>
+<td align="right">14</td>
 </tr>
 <tr class="odd">
 <td align="left">3</td>
-<td align="right">79</td>
+<td align="right">64</td>
 </tr>
 <tr class="even">
 <td align="left">4</td>
-<td align="right">84</td>
+<td align="right">64</td>
 </tr>
 <tr class="odd">
 <td align="left">5</td>
-<td align="right">70</td>
+<td align="right">53</td>
 </tr>
 <tr class="even">
 <td align="left">6</td>
-<td align="right">39</td>
+<td align="right">26</td>
 </tr>
 </tbody>
 </table>
@@ -1352,11 +1368,11 @@ gender</caption>
 <tbody>
 <tr class="odd">
 <td align="left">FALSE</td>
-<td align="right">252</td>
+<td align="right">184</td>
 </tr>
 <tr class="even">
 <td align="left">TRUE</td>
-<td align="right">68</td>
+<td align="right">57</td>
 </tr>
 </tbody>
 </table>
@@ -1370,48 +1386,38 @@ gender</caption>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">1</td>
-<td align="right">1</td>
-<td align="left">elementary school</td>
-</tr>
-<tr class="even">
-<td align="left">2</td>
-<td align="right">1</td>
-<td align="left">junior high</td>
-</tr>
-<tr class="odd">
 <td align="left">3</td>
-<td align="right">6</td>
+<td align="right">4</td>
 <td align="left">some high school</td>
 </tr>
 <tr class="even">
 <td align="left">4</td>
-<td align="right">23</td>
+<td align="right">19</td>
 <td align="left">high school graduate</td>
 </tr>
 <tr class="odd">
 <td align="left">5</td>
-<td align="right">75</td>
+<td align="right">59</td>
 <td align="left">some college</td>
 </tr>
 <tr class="even">
 <td align="left">6</td>
-<td align="right">10</td>
+<td align="right">9</td>
 <td align="left">associate’s degree</td>
 </tr>
 <tr class="odd">
 <td align="left">7</td>
-<td align="right">100</td>
+<td align="right">72</td>
 <td align="left">bachelor’s degree</td>
 </tr>
 <tr class="even">
 <td align="left">8</td>
-<td align="right">14</td>
+<td align="right">11</td>
 <td align="left">some graduate school</td>
 </tr>
 <tr class="odd">
 <td align="left">9</td>
-<td align="right">48</td>
+<td align="right">36</td>
 <td align="left">master’s degree</td>
 </tr>
 <tr class="even">
@@ -1421,12 +1427,12 @@ gender</caption>
 </tr>
 <tr class="odd">
 <td align="left">12</td>
-<td align="right">16</td>
+<td align="right">13</td>
 <td align="left">Ph.D.</td>
 </tr>
 <tr class="even">
 <td align="left">13</td>
-<td align="right">8</td>
+<td align="right">7</td>
 <td align="left">other advanced degree</td>
 </tr>
 <tr class="odd">
@@ -1447,37 +1453,37 @@ gender</caption>
 <tbody>
 <tr class="odd">
 <td align="left">2</td>
-<td align="right">10</td>
+<td align="right">8</td>
 <td align="left">Asian or Pacific Islander</td>
 </tr>
 <tr class="even">
 <td align="left">3</td>
-<td align="right">7</td>
+<td align="right">6</td>
 <td align="left">Black-Not of Hispanic Origin</td>
 </tr>
 <tr class="odd">
 <td align="left">4</td>
-<td align="right">6</td>
+<td align="right">5</td>
 <td align="left">Hispanic</td>
 </tr>
 <tr class="even">
 <td align="left">5</td>
-<td align="right">261</td>
+<td align="right">194</td>
 <td align="left">White-Not of Hispanic Origin</td>
 </tr>
 <tr class="odd">
 <td align="left">6</td>
-<td align="right">17</td>
+<td align="right">13</td>
 <td align="left">Other or Unknown</td>
 </tr>
 <tr class="even">
 <td align="left">7</td>
-<td align="right">4</td>
+<td align="right">3</td>
 <td align="left">Multi-racial (Black and White)</td>
 </tr>
 <tr class="odd">
 <td align="left">8</td>
-<td align="right">8</td>
+<td align="right">7</td>
 <td align="left">Multi-racial (other)</td>
 </tr>
 </tbody>
@@ -1499,68 +1505,68 @@ gender</caption>
 <tbody>
 <tr class="odd">
 <td align="left">1</td>
-<td align="right">20</td>
+<td align="right">13</td>
 <td align="left">Biological sciences/life sciences</td>
 </tr>
 <tr class="even">
 <td align="left">2</td>
-<td align="right">38</td>
+<td align="right">35</td>
 <td align="left">Business</td>
 </tr>
 <tr class="odd">
 <td align="left">3</td>
-<td align="right">2</td>
+<td align="right">1</td>
 <td align="left">Communications</td>
 </tr>
 <tr class="even">
 <td align="left">4</td>
-<td align="right">12</td>
+<td align="right">10</td>
 <td align="left">Computer and information sciences</td>
 </tr>
 <tr class="odd">
 <td align="left">5</td>
-<td align="right">7</td>
+<td align="right">5</td>
 <td align="left">Education</td>
 </tr>
 <tr class="even">
 <td align="left">6</td>
-<td align="right">25</td>
+<td align="right">19</td>
 <td align="left">Engineering, mathematics, or physical sciences/science
 technologies</td>
 </tr>
 <tr class="odd">
 <td align="left">7</td>
-<td align="right">8</td>
+<td align="right">6</td>
 <td align="left">Health professions or related sciences</td>
 </tr>
 <tr class="even">
 <td align="left">8</td>
-<td align="right">37</td>
+<td align="right">25</td>
 <td align="left">Humanities/liberal arts</td>
 </tr>
 <tr class="odd">
 <td align="left">9</td>
-<td align="right">12</td>
+<td align="right">7</td>
 <td align="left">Law or legal studies</td>
 </tr>
 <tr class="even">
 <td align="left">10</td>
-<td align="right">70</td>
+<td align="right">60</td>
 <td align="left">Psychology</td>
 </tr>
 <tr class="odd">
 <td align="left">11</td>
-<td align="right">29</td>
+<td align="right">21</td>
 <td align="left">Social sciences or history</td>
 </tr>
 <tr class="even">
 <td align="left">12</td>
-<td align="right">12</td>
+<td align="right">8</td>
 <td align="left">Visual or performing arts</td>
 </tr>
 <tr class="odd">
 <td align="left">13</td>
-<td align="right">16</td>
+<td align="right">11</td>
 <td align="left">Other</td>
 </tr>
 </tbody>
@@ -1578,7 +1584,7 @@ technologies</td>
 <col width="7%" />
 <col width="6%" />
 <col width="7%" />
-<col width="7%" />
+<col width="6%" />
 <col width="6%" />
 <col width="6%" />
 <col width="6%" />
@@ -1605,66 +1611,66 @@ technologies</td>
 <tr class="odd">
 <td align="left">age</td>
 <td align="right">1</td>
-<td align="right">321</td>
-<td align="right">29.7757009</td>
-<td align="right">10.6115872</td>
-<td align="right">27.0000000</td>
-<td align="right">28.5175097</td>
-<td align="right">10.3782000</td>
+<td align="right">242</td>
+<td align="right">29.7148760</td>
+<td align="right">10.6551619</td>
+<td align="right">28.0000000</td>
+<td align="right">28.4381443</td>
+<td align="right">11.8608000</td>
 <td align="right">18.000000</td>
 <td align="right">64.000000</td>
 <td align="right">46.000000</td>
-<td align="right">0.8628662</td>
-<td align="right">-0.0445467</td>
-<td align="right">0.5922810</td>
+<td align="right">0.8656653</td>
+<td align="right">0.0547428</td>
+<td align="right">0.6849397</td>
 </tr>
 <tr class="even">
 <td align="left">Mn_RT_all_3467</td>
 <td align="right">2</td>
-<td align="right">321</td>
-<td align="right">843.4824507</td>
-<td align="right">180.8568785</td>
-<td align="right">805.4250000</td>
-<td align="right">823.2816796</td>
-<td align="right">162.8759650</td>
+<td align="right">242</td>
+<td align="right">840.4185606</td>
+<td align="right">173.4091852</td>
+<td align="right">800.3791667</td>
+<td align="right">823.0694158</td>
+<td align="right">165.0875100</td>
 <td align="right">550.433333</td>
-<td align="right">1786.275000</td>
-<td align="right">1235.841667</td>
-<td align="right">1.2691046</td>
-<td align="right">2.5997690</td>
-<td align="right">10.0944466</td>
+<td align="right">1352.100000</td>
+<td align="right">801.666667</td>
+<td align="right">0.8347644</td>
+<td align="right">0.1714082</td>
+<td align="right">11.1471646</td>
 </tr>
 <tr class="odd">
 <td align="left">PCT_error_3467</td>
 <td align="right">3</td>
-<td align="right">321</td>
-<td align="right">4.9039460</td>
-<td align="right">2.6852927</td>
+<td align="right">242</td>
+<td align="right">4.8966942</td>
+<td align="right">2.6134257</td>
 <td align="right">5.0000000</td>
-<td align="right">4.8962387</td>
+<td align="right">4.8926117</td>
 <td align="right">2.4710000</td>
 <td align="right">0.000000</td>
 <td align="right">10.000000</td>
 <td align="right">10.000000</td>
-<td align="right">0.0158722</td>
-<td align="right">-0.9277231</td>
-<td align="right">0.1498784</td>
+<td align="right">0.0200917</td>
+<td align="right">-0.8311771</td>
+<td align="right">0.1679974</td>
 </tr>
 <tr class="even">
 <td align="left">D_biep.Male_Career_all</td>
 <td align="right">4</td>
-<td align="right">321</td>
-<td align="right">0.4298879</td>
-<td align="right">0.3675005</td>
-<td align="right">0.4541706</td>
-<td align="right">0.4475102</td>
-<td align="right">0.3670477</td>
+<td align="right">242</td>
+<td align="right">0.4505532</td>
+<td align="right">0.3717328</td>
+<td align="right">0.4743293</td>
+<td align="right">0.4696189</td>
+<td align="right">0.3527337</td>
 <td align="right">-1.307802</td>
 <td align="right">1.402602</td>
 <td align="right">2.710404</td>
-<td align="right">-0.7501367</td>
-<td align="right">1.8727367</td>
-<td align="right">0.0205119</td>
+<td align="right">-0.8461587</td>
+<td align="right">2.4095273</td>
+<td align="right">0.0238959</td>
 </tr>
 </tbody>
 </table>
@@ -1707,130 +1713,130 @@ technologies</td>
 <tr class="odd">
 <td align="left">assocareer</td>
 <td align="right">1</td>
-<td align="right">321</td>
-<td align="right">3.482866</td>
-<td align="right">0.7292028</td>
+<td align="right">242</td>
+<td align="right">3.495868</td>
+<td align="right">0.7187353</td>
 <td align="right">3</td>
-<td align="right">3.435798</td>
-<td align="right">0.0000</td>
+<td align="right">3.453608</td>
+<td align="right">0.7413</td>
 <td align="right">1</td>
 <td align="right">5</td>
 <td align="right">4</td>
-<td align="right">0.1797517</td>
-<td align="right">0.2425457</td>
-<td align="right">0.0407001</td>
+<td align="right">0.0811718</td>
+<td align="right">0.4567410</td>
+<td align="right">0.0462021</td>
 </tr>
 <tr class="even">
 <td align="left">assofamily</td>
 <td align="right">2</td>
-<td align="right">319</td>
-<td align="right">2.225705</td>
-<td align="right">0.7263011</td>
+<td align="right">240</td>
+<td align="right">2.208333</td>
+<td align="right">0.7190863</td>
 <td align="right">2</td>
-<td align="right">2.225681</td>
+<td align="right">2.208333</td>
 <td align="right">0.0000</td>
 <td align="right">1</td>
 <td align="right">5</td>
 <td align="right">4</td>
-<td align="right">0.5133911</td>
-<td align="right">0.8217460</td>
-<td align="right">0.0406651</td>
+<td align="right">0.4772613</td>
+<td align="right">0.6445551</td>
+<td align="right">0.0464168</td>
 </tr>
 <tr class="odd">
 <td align="left">impcareer</td>
 <td align="right">3</td>
-<td align="right">321</td>
-<td align="right">3.679128</td>
-<td align="right">0.9681654</td>
+<td align="right">242</td>
+<td align="right">3.747934</td>
+<td align="right">0.9326355</td>
 <td align="right">4</td>
-<td align="right">3.754864</td>
+<td align="right">3.819588</td>
 <td align="right">1.4826</td>
 <td align="right">1</td>
 <td align="right">5</td>
 <td align="right">4</td>
-<td align="right">-0.5618029</td>
-<td align="right">0.1706980</td>
-<td align="right">0.0540377</td>
+<td align="right">-0.6449206</td>
+<td align="right">0.3669681</td>
+<td align="right">0.0599521</td>
 </tr>
 <tr class="even">
 <td align="left">impfamily</td>
 <td align="right">4</td>
-<td align="right">320</td>
-<td align="right">4.125000</td>
-<td align="right">0.9518173</td>
+<td align="right">241</td>
+<td align="right">4.170125</td>
+<td align="right">0.9220107</td>
 <td align="right">4</td>
-<td align="right">4.253906</td>
+<td align="right">4.295337</td>
 <td align="right">1.4826</td>
 <td align="right">1</td>
 <td align="right">5</td>
 <td align="right">4</td>
-<td align="right">-1.0545867</td>
-<td align="right">0.8087124</td>
-<td align="right">0.0532082</td>
+<td align="right">-1.1663266</td>
+<td align="right">1.3481332</td>
+<td align="right">0.0593919</td>
 </tr>
 <tr class="odd">
 <td align="left">havechildren*</td>
 <td align="right">5</td>
-<td align="right">321</td>
-<td align="right">2.196262</td>
-<td align="right">0.4352999</td>
+<td align="right">242</td>
+<td align="right">2.198347</td>
+<td align="right">0.4391587</td>
 <td align="right">2</td>
-<td align="right">2.140078</td>
+<td align="right">2.144330</td>
 <td align="right">0.0000</td>
 <td align="right">1</td>
 <td align="right">3</td>
 <td align="right">2</td>
-<td align="right">0.9393788</td>
-<td align="right">0.3824550</td>
-<td align="right">0.0242961</td>
+<td align="right">0.9003721</td>
+<td align="right">0.3342664</td>
+<td align="right">0.0282302</td>
 </tr>
 <tr class="even">
 <td align="left">numboys</td>
 <td align="right">6</td>
-<td align="right">23</td>
-<td align="right">1.347826</td>
-<td align="right">0.4869848</td>
+<td align="right">21</td>
+<td align="right">1.285714</td>
+<td align="right">0.4629100</td>
 <td align="right">1</td>
-<td align="right">1.315789</td>
+<td align="right">1.235294</td>
 <td align="right">0.0000</td>
 <td align="right">1</td>
 <td align="right">2</td>
 <td align="right">1</td>
-<td align="right">0.5977914</td>
-<td align="right">-1.7114682</td>
-<td align="right">0.1015433</td>
+<td align="right">0.8817334</td>
+<td align="right">-1.2766440</td>
+<td align="right">0.1010153</td>
 </tr>
 <tr class="odd">
 <td align="left">numgirls</td>
 <td align="right">7</td>
-<td align="right">25</td>
-<td align="right">1.360000</td>
-<td align="right">0.7000000</td>
+<td align="right">24</td>
+<td align="right">1.375000</td>
+<td align="right">0.7109394</td>
 <td align="right">1</td>
-<td align="right">1.238095</td>
+<td align="right">1.250000</td>
 <td align="right">0.0000</td>
 <td align="right">1</td>
 <td align="right">3</td>
 <td align="right">2</td>
-<td align="right">1.5315219</td>
-<td align="right">0.7524845</td>
-<td align="right">0.1400000</td>
+<td align="right">1.4675608</td>
+<td align="right">0.5445951</td>
+<td align="right">0.1451199</td>
 </tr>
 <tr class="even">
 <td align="left">planchildren*</td>
 <td align="right">8</td>
-<td align="right">321</td>
-<td align="right">2.887850</td>
-<td align="right">1.2323284</td>
-<td align="right">3</td>
-<td align="right">2.984436</td>
-<td align="right">1.4826</td>
+<td align="right">242</td>
+<td align="right">2.913223</td>
+<td align="right">1.2443694</td>
+<td align="right">4</td>
+<td align="right">3.015464</td>
+<td align="right">0.0000</td>
 <td align="right">1</td>
 <td align="right">4</td>
 <td align="right">3</td>
-<td align="right">-0.4761581</td>
-<td align="right">-1.4425931</td>
-<td align="right">0.0687819</td>
+<td align="right">-0.5183218</td>
+<td align="right">-1.4313008</td>
+<td align="right">0.0799911</td>
 </tr>
 </tbody>
 </table>
@@ -1841,7 +1847,7 @@ technologies</td>
 pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 <p>[1] “Block 3 vs 6”</p>
 <table>
-<caption>Similar values (top 10) from 318</caption>
+<caption>Similar values (top 10) from 241</caption>
 <thead>
 <tr class="header">
 <th align="right">session_id</th>
@@ -1851,108 +1857,34 @@ pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">1527988</td>
-<td align="right">0.9328354</td>
-<td align="right">0.9328354</td>
+<td align="right">2003419</td>
+<td align="right">0.3535803</td>
+<td align="right">0.3535803</td>
 </tr>
 <tr class="even">
-<td align="right">1561389</td>
-<td align="right">0.8463057</td>
-<td align="right">0.8463057</td>
+<td align="right">2005858</td>
+<td align="right">0.3704484</td>
+<td align="right">0.3704484</td>
 </tr>
 <tr class="odd">
-<td align="right">1561427</td>
-<td align="right">0.7692310</td>
-<td align="right">0.7692310</td>
+<td align="right">2006357</td>
+<td align="right">0.9223250</td>
+<td align="right">0.9223250</td>
 </tr>
 <tr class="even">
-<td align="right">1605436</td>
-<td align="right">1.1891965</td>
-<td align="right">1.1891965</td>
+<td align="right">2018992</td>
+<td align="right">0.4628076</td>
+<td align="right">0.4628076</td>
 </tr>
 <tr class="odd">
-<td align="right">1608859</td>
-<td align="right">0.3217162</td>
-<td align="right">0.3217162</td>
+<td align="right">2036275</td>
+<td align="right">-0.1922958</td>
+<td align="right">-0.1922958</td>
 </tr>
 <tr class="even">
-<td align="right">1609831</td>
-<td align="right">-0.3118442</td>
-<td align="right">-0.3118442</td>
-</tr>
-</tbody>
-</table>
-<table>
-<caption>Differences, top 10 from 3</caption>
-<thead>
-<tr class="header">
-<th align="left"></th>
-<th align="right">session_id</th>
-<th align="right">D_biep.Male_Career_36</th>
-<th align="right">D</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="left">8</td>
-<td align="right">1610851</td>
-<td align="right">-0.0737204</td>
-<td align="right">0.2928003</td>
-</tr>
-<tr class="even">
-<td align="left">11</td>
-<td align="right">1624566</td>
-<td align="right">0.1251036</td>
-<td align="right">0.3114839</td>
-</tr>
-<tr class="odd">
-<td align="left">178</td>
-<td align="right">2657988</td>
-<td align="right">-0.7380516</td>
-<td align="right">-0.7277548</td>
-</tr>
-</tbody>
-</table>
-<p>[1] “Block 4 vs 7”</p>
-<table>
-<caption>Similar values (top 10) from 320</caption>
-<thead>
-<tr class="header">
-<th align="right">session_id</th>
-<th align="right">D_biep.Male_Career_47</th>
-<th align="right">D</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td align="right">1527988</td>
-<td align="right">0.7516852</td>
-<td align="right">0.7516852</td>
-</tr>
-<tr class="even">
-<td align="right">1561389</td>
-<td align="right">0.4527089</td>
-<td align="right">0.4527089</td>
-</tr>
-<tr class="odd">
-<td align="right">1561427</td>
-<td align="right">0.7191203</td>
-<td align="right">0.7191203</td>
-</tr>
-<tr class="even">
-<td align="right">1605436</td>
-<td align="right">0.5538967</td>
-<td align="right">0.5538967</td>
-</tr>
-<tr class="odd">
-<td align="right">1608859</td>
-<td align="right">0.1302582</td>
-<td align="right">0.1302582</td>
-</tr>
-<tr class="even">
-<td align="right">1609831</td>
-<td align="right">0.3127709</td>
-<td align="right">0.3127709</td>
+<td align="right">2039674</td>
+<td align="right">1.1274286</td>
+<td align="right">1.1274286</td>
 </tr>
 </tbody>
 </table>
@@ -1962,22 +1894,77 @@ pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 <tr class="header">
 <th align="left"></th>
 <th align="right">session_id</th>
+<th align="right">D_biep.Male_Career_36</th>
+<th align="right">D</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">104</td>
+<td align="right">2657988</td>
+<td align="right">-0.7380516</td>
+<td align="right">-0.7277548</td>
+</tr>
+</tbody>
+</table>
+<p>[1] “Block 4 vs 7”</p>
+<table>
+<caption>Similar values (top 10) from NA</caption>
+<thead>
+<tr class="header">
+<th align="right">session_id</th>
 <th align="right">D_biep.Male_Career_47</th>
 <th align="right">D</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">69</td>
-<td align="right">1980886</td>
-<td align="right">0.3301675</td>
-<td align="right">0.3409709</td>
+<td align="right">2003419</td>
+<td align="right">0.3904321</td>
+<td align="right">0.3904321</td>
 </tr>
+<tr class="even">
+<td align="right">2005858</td>
+<td align="right">0.1606831</td>
+<td align="right">0.1606831</td>
+</tr>
+<tr class="odd">
+<td align="right">2006357</td>
+<td align="right">0.6916271</td>
+<td align="right">0.6916271</td>
+</tr>
+<tr class="even">
+<td align="right">2018992</td>
+<td align="right">0.1510605</td>
+<td align="right">0.1510605</td>
+</tr>
+<tr class="odd">
+<td align="right">2036275</td>
+<td align="right">0.1327857</td>
+<td align="right">0.1327857</td>
+</tr>
+<tr class="even">
+<td align="right">2039674</td>
+<td align="right">0.0917939</td>
+<td align="right">0.0917939</td>
+</tr>
+</tbody>
+</table>
+<table>
+<caption>Differences, top 10 from 242</caption>
+<thead>
+<tr class="header">
+<th align="right">session_id</th>
+<th align="right">D_biep.Male_Career_47</th>
+<th align="right">D</th>
+</tr>
+</thead>
+<tbody>
 </tbody>
 </table>
 <p>[1] “Blocks 3&amp;4 vs 6&amp;7”</p>
 <table>
-<caption>Similar values (top 10) from 236</caption>
+<caption>Similar values (top 10) from 174</caption>
 <thead>
 <tr class="header">
 <th align="right">session_id</th>
@@ -1987,39 +1974,39 @@ pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">1527988</td>
-<td align="right">0.8422603</td>
-<td align="right">0.8109858</td>
+<td align="right">2003419</td>
+<td align="right">0.3720062</td>
+<td align="right">0.3695337</td>
 </tr>
 <tr class="even">
-<td align="right">1561389</td>
-<td align="right">0.6495073</td>
-<td align="right">0.5949451</td>
+<td align="right">2005858</td>
+<td align="right">0.2655658</td>
+<td align="right">0.2121954</td>
 </tr>
 <tr class="odd">
-<td align="right">1561427</td>
-<td align="right">0.7441756</td>
-<td align="right">0.7173301</td>
+<td align="right">2006357</td>
+<td align="right">0.8069760</td>
+<td align="right">0.7575409</td>
 </tr>
 <tr class="even">
-<td align="right">1605436</td>
-<td align="right">0.8715466</td>
-<td align="right">0.7802072</td>
+<td align="right">2018992</td>
+<td align="right">0.3069341</td>
+<td align="right">0.2256711</td>
 </tr>
 <tr class="odd">
-<td align="right">1608859</td>
-<td align="right">0.2259872</td>
-<td align="right">0.1971435</td>
+<td align="right">2036275</td>
+<td align="right">-0.0297550</td>
+<td align="right">-0.0029191</td>
 </tr>
 <tr class="even">
-<td align="right">1609831</td>
-<td align="right">0.0004633</td>
-<td align="right">0.0475790</td>
+<td align="right">2039674</td>
+<td align="right">0.6096113</td>
+<td align="right">0.5062888</td>
 </tr>
 </tbody>
 </table>
 <table>
-<caption>Differences, top 10 from 85</caption>
+<caption>Differences, top 10 from 68</caption>
 <thead>
 <tr class="header">
 <th align="left"></th>
@@ -2030,45 +2017,45 @@ pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="left">6</td>
-<td align="right">1609831</td>
-<td align="right">0.0004633</td>
-<td align="right">0.0475790</td>
+<td align="left">5</td>
+<td align="right">2036275</td>
+<td align="right">-0.0297550</td>
+<td align="right">-0.0029191</td>
 </tr>
 <tr class="even">
 <td align="left">8</td>
-<td align="right">1610851</td>
-<td align="right">-0.0200951</td>
-<td align="right">0.1674167</td>
+<td align="right">2062175</td>
+<td align="right">-0.0235287</td>
+<td align="right">0.0065123</td>
 </tr>
 <tr class="odd">
-<td align="left">11</td>
-<td align="right">1624566</td>
-<td align="right">0.3914384</td>
-<td align="right">0.4042464</td>
+<td align="left">9</td>
+<td align="right">2065048</td>
+<td align="right">0.3737711</td>
+<td align="right">0.3848706</td>
 </tr>
 <tr class="even">
+<td align="left">10</td>
+<td align="right">2085244</td>
+<td align="right">0.2584314</td>
+<td align="right">0.3336029</td>
+</tr>
+<tr class="odd">
 <td align="left">16</td>
-<td align="right">1687673</td>
-<td align="right">-0.2287274</td>
-<td align="right">-0.1649222</td>
-</tr>
-<tr class="odd">
-<td align="left">18</td>
-<td align="right">1714254</td>
-<td align="right">0.2027641</td>
-<td align="right">0.2787973</td>
+<td align="right">2125767</td>
+<td align="right">0.6400417</td>
+<td align="right">0.6992014</td>
 </tr>
 <tr class="even">
-<td align="left">28</td>
-<td align="right">1786347</td>
-<td align="right">0.8228499</td>
-<td align="right">0.8694835</td>
+<td align="left">19</td>
+<td align="right">2269603</td>
+<td align="right">0.0955963</td>
+<td align="right">0.3579569</td>
 </tr>
 </tbody>
 </table>
 <p>[1] “Correlation D_biep.Male_Career_all &amp; D_3467” [1]
-0.9716395</p>
+0.9709614</p>
 <table>
 <caption>Comparison of original D and Dmean from calculations</caption>
 <thead>
@@ -2080,53 +2067,51 @@ pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 </thead>
 <tbody>
 <tr class="odd">
-<td align="right">0.8422603</td>
-<td align="right">0.8422603</td>
-<td align="right">0.8109858</td>
+<td align="right">0.3720062</td>
+<td align="right">0.3720062</td>
+<td align="right">0.3695337</td>
 </tr>
 <tr class="even">
-<td align="right">0.6495073</td>
-<td align="right">0.6495073</td>
-<td align="right">0.5949451</td>
+<td align="right">0.2655658</td>
+<td align="right">0.2655658</td>
+<td align="right">0.2121954</td>
 </tr>
 <tr class="odd">
-<td align="right">0.7441756</td>
-<td align="right">0.7441756</td>
-<td align="right">0.7173301</td>
+<td align="right">0.8069760</td>
+<td align="right">0.8069760</td>
+<td align="right">0.7575409</td>
 </tr>
 <tr class="even">
-<td align="right">0.8715466</td>
-<td align="right">0.8715466</td>
-<td align="right">0.7802072</td>
+<td align="right">0.3069341</td>
+<td align="right">0.3069341</td>
+<td align="right">0.2256711</td>
 </tr>
 <tr class="odd">
-<td align="right">0.2259872</td>
-<td align="right">0.2259872</td>
-<td align="right">0.1971435</td>
+<td align="right">-0.0297550</td>
+<td align="right">-0.0297550</td>
+<td align="right">-0.0029191</td>
 </tr>
 <tr class="even">
-<td align="right">0.0004633</td>
-<td align="right">0.0004633</td>
-<td align="right">0.0475790</td>
+<td align="right">0.6096113</td>
+<td align="right">0.6096113</td>
+<td align="right">0.5062888</td>
 </tr>
 </tbody>
 </table>
 <table>
-<caption>Differences, top 10 from 204</caption>
+<caption>Differences, top 10 from 147</caption>
 <colgroup>
-<col width="2%" />
-<col width="9%" />
-<col width="19%" />
-<col width="8%" />
-<col width="18%" />
-<col width="8%" />
-<col width="18%" />
-<col width="8%" />
-<col width="8%" />
+<col width="11%" />
+<col width="23%" />
+<col width="7%" />
+<col width="22%" />
+<col width="4%" />
+<col width="22%" />
+<col width="4%" />
+<col width="7%" />
 </colgroup>
 <thead>
 <tr class="header">
-<th align="left"></th>
 <th align="right">session_id</th>
 <th align="right">D_biep.Male_Career_all</th>
 <th align="right">D_3467</th>
@@ -2138,28 +2123,6 @@ pre-processed file D - calculated from raw data (M1- M2)/sd(12)</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
-<td align="left">8</td>
-<td align="right">1610851</td>
-<td align="right">-0.0200951</td>
-<td align="right">0.1674167</td>
-<td align="right">-0.0737204</td>
-<td align="right">0.2928003</td>
-<td align="right">0.0335303</td>
-<td align="right">0.0335303</td>
-<td align="right">0.1631653</td>
-</tr>
-<tr class="even">
-<td align="left">11</td>
-<td align="right">1624566</td>
-<td align="right">0.3914384</td>
-<td align="right">0.4042464</td>
-<td align="right">0.1251036</td>
-<td align="right">0.3114839</td>
-<td align="right">0.6577731</td>
-<td align="right">0.6577731</td>
-<td align="right">0.4846285</td>
-</tr>
 </tbody>
 </table>
 </div>
