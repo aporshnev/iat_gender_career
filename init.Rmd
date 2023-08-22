@@ -148,14 +148,14 @@ country_mig <- countrycit != "UK"
 #education 1. elementary school, 2 junior high - exclude
 #important variable country Country/Region of Primary Citizenship probably we should focus on it
 # countrycit + variable  countrycit==countryres?
-
 p_UK_clean<- filter(  p_UK, !is.na(D_biep.Male_Career_all) & 
                       countryres=="UK" & 
                       p_UK$sex %in% c("m","f") &
                       !( log(p_UK$Mn_RT_all_3467)<6| log(p_UK$Mn_RT_all_3467)>7.5 ) &
                       p_UK$PCT_error_3467 <= 10 &
-                      p_UK$age>17 &
-                      p_UK$edu_14>2)
+                      p_UK$age>17
+                      & !(p_UK$edu_14 %in% c(1,2,"1","2"))
+                      )
 
 t_UK_clean<- filter(t_data, session_id %in% p_UK_clean$session_id)
 
