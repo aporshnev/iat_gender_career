@@ -1,0 +1,46 @@
+---
+title: "Story_2"
+author: "Alexander Porshnev"
+date: "2023-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results = 'asis')
+library(data.table)
+library(knitr)
+library(dplyr)
+```
+
+
+
+```{r }
+years_to_load<-c(2005:2021)
+
+init_dir <- "C:/Alex/Maynooth/IAT/Gender-Career/Datasets/RAW_Preprocessed"
+
+raw_data_dir<-paste0(getwd(), "/GenderCareer_iat_", years_to_load)
+p_data_files<-NULL
+prev_names <- NULL
+cur_names  <- NULL
+i=1
+
+for (i in (1:16)){
+  p_data_files<-c(p_data_files, paste0(init_dir, "/Gender-Career IAT.public.", years_to_load[i], "-CSV/Gender-Career IAT.public.", years_to_load[i], ".csv"))
+}
+  p_data <- fread(file = p_data_files[1], header = TRUE, sep =",")
+  prev_names<-names(p_data)
+    for (i in (2:16))
+{
+  p_data <- fread(file = p_data_files[i], header = TRUE, sep =",")
+  cur_names<-names(p_data)      
+  
+  print(kable(cur_names[!(cur_names %in% prev_names)],col.names = c(years_to_load[i]), caption = paste0(years_to_load[i-1],"-", years_to_load[i]," new: \n\n\n")))
+  print(kable(prev_names[!(prev_names %in% cur_names)], caption = paste0(years_to_load[i-1],"-", years_to_load[i]," old (no more such variable): \n\n\n")))
+  prev_names<-cur_names
+}
+
+```
+
+
+  

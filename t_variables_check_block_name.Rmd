@@ -1,0 +1,39 @@
+---
+title: "variables_t_check"
+author: "Alexander Porshnev"
+date: "2023-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results = 'asis')
+
+library(data.table)
+library(knitr)
+library(dplyr)
+```
+
+
+
+```{r }
+years_to_load<-c(2005:2021)
+
+init_dir <- "C:/Alex/Maynooth/IAT/Gender-Career/Datasets/RAW_Preprocessed"
+
+raw_data_dir<-paste0(init_dir, "/GenderCareer_iat_", years_to_load)
+i=1
+for (i in c(1:length(years_to_load))){
+  data_files<-list.files(raw_data_dir[i])
+  data_files<-data_files[grep("*.txt$",data_files)]
+  data_files<-paste0(raw_data_dir[i],"/", data_files)
+  data_from_year<-NULL
+  for (j in data_files[1]){
+    d<-fread(j, header = TRUE, sep = "\t")
+    data_from_year<-rbind(data_from_year, d)    
+  }
+  t_data<-data_from_year
+t_data$
+  print(kable(table(t_data$block_name, t_data$block_number),  caption = paste0(years_to_load[i],": Description cross-table block_name-block_number")))
+}
+
+```
