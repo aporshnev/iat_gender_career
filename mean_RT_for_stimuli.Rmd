@@ -1,0 +1,128 @@
+---
+title: "Stage2 mean for Stimuli"
+author: "Alexander Porshnev"
+date: "2023-10-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results = 'asis', warning = FALSE)
+library(dplyr)
+library(knitr)
+library(psych)
+library(md.log)
+library(data.table)
+library(tidyr)
+```
+# Mean for reaction time by stimulus
+```{r}
+print_ttest<-function(out, add_caption =""){
+  cat(paste0("\n### t-test for RT on",add_caption, "\n"))
+  cat(paste0(out$method, "p-value = ", round(out$p.value, 3), " t = ", round(out$statistic, 3), " df = ", round(out$parameter, 3), "\n"),sep = "\n")
+}
+```
+
+
+```{r print_table_function, echo = FALSE, results = 'asis', warning = FALSE}
+print_tables<-function(t_data_d, year, incl_errors = TRUE){
+add_caption <- ""
+if (incl_errors == FALSE) {
+  t_data_d <- t_data_d %>% filter(trial_error!=1)
+  cat("\n## Excluding trials with errors\n")
+  add_caption = " Excluding trials with errors "  
+}
+
+female <- c("Rebecca", "Michelle", "Emily", "Julia", "Anna")
+male <- c("Ben", "Paul", "Daniel", "John", "Jeffrey")
+career<-c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business")
+family<-c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children")
+responces <- c("Female/Career", "Female/Family", "Male/Career", "Male/Family", "Female/Family", "Female/Career", "Male/Family", "Male/Career")
+
+table_RT <- t_data_d %>% group_by(trial_name, trial_response) %>% summarise(M = mean(trial_latency), .groups = "keep") %>% 
+  filter(trial_name  %in% c(female, male, career, family) & trial_response %in% responces)
+
+
+
+
+
+#year=2005
+if (incl_errors == FALSE) {
+  table_RT_out<-table_RT
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)]<-gsub("/Career", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)])
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)]<-gsub("/Family", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)])
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)]<-gsub("Male/", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)])
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)]<-gsub("Female/", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)])
+  table_RT_out$trial_name<-tolower(table_RT_out$trial_name)
+  
+  table_RT_out$trial_response<-tolower(table_RT_out$trial_response)
+  fwrite(table_RT_out, file = paste0("RT_", year, ".csv"))
+}
+
+
+
+table_report <-table_RT
+table_report$category<-NA
+table_report$category[grep(pattern = "Male", table_report$trial_response)]<-"male"
+table_report$category[grep(pattern = "Female", table_report$trial_response)]<-"female"
+table_report$trial_response<-gsub("Male/", "", table_report$trial_response)
+table_report$trial_response<-gsub("Female/", "", table_report$trial_response)
+
+table_out <- table_report %>% filter(trial_name %in% c(female, male))  %>% pivot_wider(names_from = trial_response, values_from = "M") %>%
+   arrange (trial_name)
+
+print(kable(table_out, caption = paste0("Mean reaction times for Female&Male names vs Family&Career categories", add_caption)))
+
+
+table_out <- table_report %>% filter(trial_name %in% c(career, family))  %>% pivot_wider(names_from = category, values_from = "M") %>%   arrange (trial_response)
+
+
+print(kable(table_out, caption = paste0("Mean reaction times for Family&Career words vs Female&Male categories", add_caption)))
+
+female_names_career<-filter(table_RT, trial_name  %in% female & trial_response %in% c("Female/Career"))
+female_names_family<-filter(table_RT, trial_name  %in% female & trial_response %in% c("Female/Family"))
+print_ttest(t.test(female_names_career$M, female_names_family$M), add_caption = " Female names in Career vs Family")
+
+
+male_names_family<-filter(table_RT, trial_name  %in% male & trial_response %in% c("Male/Family"))
+male_names_career<-filter(table_RT, trial_name  %in% male & trial_response %in% c("Male/Career"))
+print_ttest(t.test(male_names_career$M, male_names_family$M), add_caption = " Male names in Career vs Family")
+
+career_words_family<-filter(table_RT, trial_name  %in% career & trial_response %in% c("Female/Career"))
+career_words_career<-filter(table_RT, trial_name  %in% career & trial_response %in% c("Male/Career"))
+print_ttest(t.test(career_words_family$M, career_words_career$M), add_caption = " Career words in Male vs Female")
+
+family_words_family<-filter(table_RT, trial_name  %in% family & trial_response %in% c("Female/Career"))
+family_words_career<-filter(table_RT, trial_name  %in% family & trial_response %in% c("Male/Career"))
+print_ttest(t.test(career_words_family$M, career_words_career$M), add_caption = " Family words in Male vs Female")
+}
+```
+
+
+```{r describe_year_function, echo = FALSE, results = 'asis', warning = FALSE}
+describe_clean_data_RT<-function(year){
+path = "C:\\Alex\\Maynooth\\IAT\\Gender-Career\\Analysis\\"
+t_filename = paste0(path, "Sep23_stage2_All_years\\Clean_datasets\\t_", year, ".csv")
+t_data_d <- fread(t_filename)
+
+#p_filename = paste0(path, "Sep23_stage2_All_years\\Clean_datasets\\p_", year, ".csv")
+#p_data_d <- fread(p_filename)
+
+#t_data_block <- filter(t_data, block_number %in% c(2,3,5,6))
+print_tables(t_data_d, year,  incl_errors = TRUE)
+print_tables(t_data_d, year,  incl_errors = FALSE)
+}
+```
+
+
+
+```{r main, echo = FALSE, results = 'asis', warning = FALSE}
+md.log("Start", file="log.txt", append =FALSE, time = TRUE)
+i=2005
+for (i in 2005:2006){
+  md.log(paste0("year", i, "started"))
+  cat(paste0("\n# ", i, "\n"))
+  describe_clean_data_RT(i)
+  md.log(paste0("year", i, "done"))
+}
+```
+
