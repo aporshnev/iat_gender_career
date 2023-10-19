@@ -1,0 +1,69 @@
+---
+title: "extracting_PPMI_scores"
+author: "Alexander Porshnev"
+date: "2023-10-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results = 'asis')
+
+library(dplyr)
+library(knitr)
+library(tidyr)
+
+female<-c("rebecca", "michelle", "emily", "julia", "anna")
+male<-c("ben", "paul", "daniel", "john", "jeffrey")
+career<-c("career", "corporation", "salary", "office", "professional", "management", "business")
+family<-c("wedding", "marriage", "parents", "relatives", "family", "home", "children")
+response<-c("career","family", "male", "female")
+
+
+```
+
+# PPMI scores 
+Distances from C:\\Alex\\Maynooth\\Python_Projects\\Wingfield_Connell_2022\\ldm-query\\out_IAT_GC+.txt
+Raw from Names to "career", "family"
+Raw from family, career to "female", "male"
+
+## Added group variable
+s_type: "family", "female" and family, female &  "male", "career" and family, career 
+n_type: others
+
+```{r}
+dat1<-read.csv("C:\\Alex\\Maynooth\\Python_Projects\\Wingfield_Connell_2022\\ldm-query\\out_IAT_GC+.txt", sep=",")
+d2<- dat1 %>% filter(First.word %in% c(male, female) & Second.word %in% c("career", "family")) 
+d3<- dat1 %>% filter(First.word %in% c(family, career) & Second.word %in% c("female", "male"))
+d_res<-rbind(d2,d3) %>% arrange(Second.word, First.word)
+
+d_res$group <- NA
+for (i in 1:length(d_res[,1])){
+  if ((d_res$Second.word[i] %in% c("family", "female") & (d_res$First.word[i] %in% c(family, female) ))|
+      (d_res$Second.word[i] %in% c("male", "career") & (d_res$First.word[i] %in% c(career, male))) ){
+    d_res$group[i]<- "s_type"
+  }
+  else{
+    d_res$group[i]<- "n_type"}
+}
+
+print(kable(d_res, caption = "Distances between stimulus and categories"))
+
+print(t.test(d_res$cosine.distance[d_res$group=="s_type"],d_res$cosine.distance[d_res$group=="n_type"] ))
+
+
+write.csv(d_res, "C:\\Alex\\Maynooth\\IAT\\Gender-Career\\Analysis\\Sep23_stage2_PPMIscores\\PPMI_scores\\m_PPMI_scores_0.csv")
+
+```
+
+```{r}
+names(d_res)
+d_delta <- d_res %>% select(c("First.word", "group", "cosine.distance")) %>% pivot_wider(names_from = c("group"), values_from = cosine.distance)
+
+d_delta$delta <- d_delta$n_type - d_delta$s_type
+
+print(kable(d_delta, caption = "Wide table with distances for n_type and s_type"))
+
+print(kable(table(d_delta$delta>0), caption = "Number of words with PPMI score distance from s_type<n_type "))
+
+```
+
