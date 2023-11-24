@@ -1,0 +1,314 @@
+---
+title: "Gender&Career IAT Analysis"
+author: "Alexander Porshnev"
+date: "2023-08-28"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results='asis')
+library(dplyr)
+library(knitr)
+library(psych)
+library(md.log)
+library(data.table)
+library(tidyr)
+```
+
+# Gender & Career experiment  IAT 2005-2022 
+### (https://osf.io/abxq7/)
+
+## IAT task:
+  
+Female stimuli are: Rebecca, Michelle, Emily, Julia, Anna
+
+Male stimuli are: Ben, Paul, Daniel, John, Jeffrey
+
+Career stimuli are: Career, Corporation, Salary, Office, Professional, Management, Business
+
+Family stimuli are: Wedding, Marriage, Parents, Relatives, Family, Home, Children
+
+
+```{r function for D whole calculations}
+calc_D<- function(){
+
+female <- c("Rebecca", "Michelle", "Emily", "Julia", "Anna")
+male <- c("Ben", "Paul", "Daniel", "John", "Jeffrey")
+career<-c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business")
+family<-c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children")
+responces <- c("Female/Career", "Female/Family", "Male/Career", "Male/Family")
+
+table_c <- t_data %>% filter (trial_name  %in% c(female, male, career, family) & trial_response %in% responces ) 
+
+table_c$group <- ((table_c$trial_response %in% c("Female/Family") & (table_c$trial_name %in% c(family, female) ))|
+      (table_c$trial_response %in% c("Male/Career") & (table_c$trial_name %in% c(career, male))))
+
+
+table_SD <- table_c %>% group_by(session_id) %>% summarise(SD = SD(trial_latency), .groups = "keep") 
+table_M <- table_c %>% group_by(session_id, group) %>%  summarise(M = mean(trial_latency), SD = SD(trial_latency), .groups = "keep") 
+
+M_wide <- table_M %>% pivot_wider(names_from = c("group"), values_from =c(M, SD))
+M_wide$D <- 
+D_wide<-left_join(M_wide, table_SD, join_by("session_id"))
+names(D_wide)<-c("session_id", "M_incongruent", "M_congruent", "SD") #
+D_wide$D<-(D_wide$M_incongruent-D_wide$M_congruent)/D_wide$SD
+}
+```
+
+```{r function for D calculations}
+calc_D_block<-function(block, p_data, t_data){
+
+md.log(paste0(block, collapse = "\n"))
+#  block<-c(3,6)
+#  table(t_data$block_IAT, )
+  
+female <- c("Rebecca", "Michelle", "Emily", "Julia", "Anna")
+male <- c("Ben", "Paul", "Daniel", "John", "Jeffrey")
+career<-c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business")
+family<-c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children")
+responces <- c("Female/Career", "Female/Family", "Male/Career", "Male/Family", "Career/Male,Family/Female", "Family/Male,Career/Female")
+md.log(paste0(names(t_data), sep="", collapse = "\n"))
+
+
+table(t_data$block_number, t_data$trial_name)
+
+
+table_c <- t_data %>% filter(block_IAT %in% block) %>% filter (trial_name  %in% c(female, male, career, family) & trial_def_IAT %in% responces ) 
+
+table_c$group <- ((table_c$trial_response %in% c("Female/Family") & (table_c$trial_name %in% c(family, female) ))|
+      (table_c$trial_def_IAT %in% c("Male/Career", "Career/Male,Family/Female") & (table_c$trial_name %in% c(career, male))))
+
+
+table_SD <- table_c %>% group_by(session_id) %>% summarise(SD = SD(trial_latency), .groups = "keep") 
+table_M <- table_c %>% group_by(session_id, group) %>%  summarise(M = mean(trial_latency), .groups = "keep") 
+
+M_wide <- table_M %>% pivot_wider(names_from = c("group"), values_from =M)
+D_wide<-left_join(M_wide, table_SD, join_by("session_id"))
+names(D_wide)<-names(D_wide)<-c("session_id", "M_incongruent", "M_congruent", "SD")
+
+D_wide$D<-(D_wide$M_incongruent-D_wide$M_congruent)/D_wide$SD
+return (D_wide)
+}
+```
+
+```{r d mean calculations, results='asis'}
+d_mean_calc<- function(p_data, t_data){
+
+D_wide1<-NULL
+check_d  <-NULL
+D_wide1 <- calc_D_block(c(3,6), p_data, t_data) %>% select(c("session_id", "D"))
+D_wide2 <- calc_D_block(c(4,7), p_data, t_data) %>% select(c("session_id", "D"))
+check_d <- left_join(D_wide1, D_wide2, join_by("session_id"))
+check_d$D<-(check_d$D.x+check_d$D.y)/2
+
+p_check<-left_join(p_data, check_d, join_by("session_id"))
+#p_check$D_biep.Male_Career_36
+print(kable(head(p_check[,c("D", "D_biep.Male_Career_all", "D.x", "D_biep.Male_Career_36", "D.y", "D_biep.Male_Career_47")]), caption = "D from raw data and preprocessed from ocf storage"))
+
+#xtest<-calc_D_block(c(2,5))
+
+# block1<-c(3)
+# block2<-c(6)
+# res1 <- t_data %>% filter(block_number %in% block1) %>% group_by(session_id) %>% summarize(M_block1 = mean(trial_latency), )
+# res2 <- t_data %>% filter(block_number %in% block2) %>% group_by(session_id) %>% summarize(M_block2 = mean(trial_latency), )
+# res12sd <- t_data %>% filter(block_number %in% c(block1, block2)) %>% group_by(session_id) %>% summarize(sd12 = sd(trial_latency))
+# 
+# by = join_by(session_id)
+# check_data<-left_join(res1, res2, by)
+# check_data<-left_join(check_data, res12sd, by)
+# check_data$D36<-(check_data$M_block1-check_data$M_block2)/(check_data$sd12)
+# p_data$order_sign<- ifelse(p_data$Order==2,1,-1)
+# 
+# #check_data_res<-left_join(p_data[,c("session_id", "order_sign" )], check_data[,c("D", "session_id")], by)
+# check_data_res$D36<-check_data_res$D36*check_data_res$order_sign
+# 
+# res<-left_join(check_data_res, p_data, join_by("session_id"))
+# 
+# res1<-left_join(p_check[,c("session_id","D.x", "D_biep.Male_Career_36")],check_data_res, join_by("session_id"))
+# left_join(D_wide1, res1, join_by("session_id"))
+# res[,c("D","D_biep.Male_Career_36")]
+return (p_check[,c("session_id", "D")])
+}
+```
+
+
+
+```{r describe dataset, results = 'asis'}
+describe_dataset<-function(name, p_data, t_data, include_prev_year){
+  cat(paste0("\n### Data from trials from previous year included: ", include_prev_year, "\n"))
+  #name = 2005
+  #print(names(t_data))
+  #table(t_data$trial_def_IAT)  
+
+  t_data$block_IAT <- t_data$block_number+1 #difference in numeration of blocks from 2005-2015, and >2016
+  
+  t_data$trial_def_IAT <- t_data$trial_response
+  #table(t_data$trial_def_IAT)
+  t_data$trial_name<-sub("[|]","", t_data$trial_name)
+  
+  #table(t_data$trial_name)  
+   if (as.numeric(name)>2015){
+    t_data$trial_def_IAT <- t_data$block_pairing_definition
+    t_data$block_IAT <- t_data$block_number #difference in numeration of blocks from 2005-2015, and >2016
+    p_data$countryres<-NA
+    p_data$countryres[p_data$countryres_num==1] <- "US"
+    p_data$countryres[p_data$countryres_num==225] <- "UK"
+    if (as.numeric(name)>2017){
+      p_data$sex<-NA
+      p_data$sex[p_data$birthSex==1]<-"m"
+      p_data$sex[p_data$birthSex==2]<-"f"
+    }
+    else{
+      p_data$sex<-NA
+      p_data$sex[p_data$birthsex==1]<-"m"
+      p_data$sex[p_data$birthsex==2]<-"f"    
+    }
+    
+    p_data$birth_sex <- p_data$sex
+    p_data$age <- as.numeric(name)-p_data$birthyear
+    }
+  
+  p_clean <- p_data %>% filter((countryres=="US" | countryres=="UK" )
+                               & !is.na(D_biep.Male_Career_all)
+                               & sex %in% c("m","f")
+                               & age>17)
+  
+  cat("\n\n---\n---\n\n")
+  cat(paste0("\n### ", name))
+  print(kable(table(p_clean$countryres==p_clean$countrycit), caption = "Country of residence = Country of origin"))
+  
+  cat("\n#### Disrtibution by birthsex")
+  print(kable(table(p_clean$sex), caption = ""))
+  cat("\n#### Distribution by Political values")
+  print(kable(table(p_clean$politicalid_7), caption = ""))
+  
+  cat("\n#### Distribution by Age ")
+  print(kable(describe(p_clean$age)))
+  
+  d_m <- d_mean_calc(p_clean, t_data)
+  
+  d_check<-left_join(p_clean[,c("session_id", "D_biep.Male_Career_all", "countryres")], d_m, by = "session_id")
+  
+  cat("\n#### D check ")
+  #print(kable(head(d_check), caption = "D check"))
+  
+  print(kable(table(d_check$countryres, (d_check$D_biep.Male_Career_all-d_check$D)<0.001), caption = "TRUE if difference in D calculated from raw data and preprocessed <0.001"))
+  
+  print(kable(prop.table(table(d_check$countryres, (d_check$D_biep.Male_Career_all-d_check$D)<0.001),1), caption = "Percent: TRUE if difference in D calculated from raw data and preprocessed <0.001"))
+  
+  problematic_ids<-d_check$session_id[(d_check$D_biep.Male_Career_all-d_check$D_mean)>0.001 | is.na(d_check$D_mean)]
+  write.csv(problematic_ids, paste0("D-check/ids_", name, ".csv"))
+  
+  clean_ids<- d_check$session_id[(d_check$D_biep.Male_Career_all-d_check$D_mean)<0.001 & !is.na(d_check$D_mean)]
+  
+  cat("\n#### Previous session analysis")
+  print(kable(table(!is.na(p_clean$previous_session_id), p_clean$countryres), caption = "How many has previous session (in 15 min time frame)"))
+  cat("\n\n")
+  
+  p_clean <- p_clean%>%filter(session_id %in% clean_ids)
+  
+  md.log("writing clean participants file")
+  fwrite(p_clean, file = paste0("Clean_datasets/p_", name, ".csv"), append = FALSE, sep = ";")
+  md.log("Done")
+  md.log("writing trial file")
+  t_clean <- t_data %>% filter (session_id %in% clean_ids)
+  fwrite(t_clean, file = paste0("Clean_datasets/t_", name, ".csv"), append = FALSE, sep = ";")
+  md.log("Done")
+}
+```
+
+```{r}
+# md.log("Start", file="log.txt", append =FALSE, time = TRUE)
+# years_to_load<-c(2005:2006)
+# i=2
+# for (i in c(1:length(years_to_load))){
+#    p_data <- fread(paste0("p_test_", years_to_load[i], ".csv"), header = TRUE, sep =",")
+#    t_data <- fread(paste0("t_test_", years_to_load[i], ".csv"), header = TRUE, sep =",")
+#    md.log(years_to_load[i])
+#    #print(years_to_load[i])
+#    #print(table(t_data$block_number))
+#    #print(table(t_data$block_name))
+#    describe_dataset(years_to_load[i], p_data, t_data)
+# }
+
+```
+
+
+# Datasets & Variables
+``` {r main, results='asis'}
+#sav file variables have problems, like "UK    " , so we will use year by year data
+include_prev_year = TRUE
+
+md.log("Start", file = "log.txt", append = FALSE)
+
+years_to_load<-c(2005:2015)
+
+
+init_dir <- "../../source_Datasets" 
+
+raw_data_dir<-paste0("../../source_Datasets/GenderCareer_iat_", years_to_load)
+p_data_files<-NULL
+for (i in years_to_load){
+  p_data_files<-c(p_data_files, paste0(init_dir, "/Gender-Career IAT.public.", i, "-CSV/Gender-Career IAT.public.", i, ".csv"))
+}
+data_from_prev_year<-NULL
+i=2
+for (i in c(1:length(years_to_load))){
+  data_files<-list.files(raw_data_dir[i])
+  data_files<-data_files[grep("*.txt$",data_files)]
+  data_files<-paste0(raw_data_dir[i],"/", data_files)
+  md.log(years_to_load[i])
+  rm(data_from_year)
+  data_from_year<-NULL
+  for (j in data_files){
+    d<-fread(j, header = TRUE, sep = "\t")
+    md.log(j)
+    data_from_year<-rbind(data_from_year, d)    
+  }
+
+  
+  md.log("Trials Data uploaded")
+  p_data <- fread(p_data_files[i], header = TRUE, sep =",")
+  md.log("Participants Data uploaded")
+  
+  
+  if (include_prev_year){
+    all_ids <- p_data$session_id
+    
+    
+    if (!is.null(data_from_prev_year)){
+      
+      prev_year_ids<- (intersect(unique(data_from_prev_year$session_id), all_ids))
+      #data_from_prev_year <- data_from_prev_year %>% filter(session_id %in% all_ids)
+      year_ids <- (intersect(unique(data_from_year$session_id), all_ids))
+      keep_ids <- setdiff(prev_year_ids, year_ids)
+      
+      data_from_prev_year<- data_from_prev_year %>% filter(session_id %in% keep_ids)
+      
+      cat(paste0("\n#### In previous year we found data from ", length(keep_ids), " participants \n"))
+      }
+    else{
+      cat(paste0("\n#### No data from previous year is empty \n"))
+      }
+
+    t_data<-rbind(data_from_year, data_from_prev_year)
+    }
+  else {
+    t_data<-data_from_year
+    }
+  md.log("Data from prvious year added uploaded")
+ 
+  
+  
+ 
+  md.log("Start  analyzing year data")
+
+  describe_dataset(years_to_load[i], p_data, t_data, include_prev_year)
+  
+  md.log("Year described")
+  data_from_prev_year <- data_from_year
+  #data_from_prev_year <- filter(data_from_year, !(data_from_year$session_id %in% p_data$session_id))
+}
+
+
+```
