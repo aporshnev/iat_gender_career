@@ -18,54 +18,44 @@ library(stringr)
 library(performance)
 library(md.log)
 library(psych) # needed for cor.ci
+library(tidyr)
+
 
 
 
 ```
 
-```{r}
-#formula<-f
-#data<-RT_data_use
+```{r functions}
 lm_model<-function(formula, lm = TRUE,  data){
 if (lm == TRUE){
-  r_model<-lm(formula, data)
+  r_model<-lm(formula, data) # simple model
 }
 else{
-  r_model<-lmer(formula, data,REML = TRUE )  
-  }
+  r_model<-lmer(formula, data, REML = TRUE ) # random effect model  
+}
 cat(paste0("\n#### Model:   ",formula, "\n"))
 BIC_r_model <- round(BIC(r_model),2)
 cat(paste0("\n#### BIC: ",BIC_r_model, "\n\n\n"))
-# BIC = 1135.806\
 
-#tab<-tab_model(r_model)
-#cat(tab$page.style)
-#cat(tab$page.content)
 return (r_model)
 }
-```
 
-```{r}
-#
-#ldm_name<-name
-cor_feature<-function(fname, baseline, ldm_name)
+add_feature<-function(fname, baseline, ldm_name)
 {
   feature_data<-fread(fname)
   
   try(names(feature_data)<- c("n","First.word", "Second.word", ldm_name))
   try(names(feature_data)<- c("First.word", "Second.word", ldm_name))
+  #[TBD] create unified output for open and custom models on step 3 or 4?
   
   feature_data$First.word <- tolower(feature_data$First.word)
-
   feature_data$stimuli<-paste0(feature_data$First.word,"_", feature_data$Second.word)
   
   female <- tolower(c("Rebecca", "Michelle", "Emily", "Julia", "Anna"))
   male <- tolower(c("Ben", "Paul", "Daniel", "John", "Jeffrey"))
   career<-tolower(c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business"))
   family<-tolower(c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children"))
-  #responces <- tolower(c("Female/Career", "Female/Family", "Male/Career", "Male/Family"))
-  
-  library(tidyr)
+
   RT_data$trial_response<-NA
   
   RT_data$trial_response <- ifelse(RT_data$congruent & RT_data$stimuli %in% female, "family",
@@ -83,13 +73,7 @@ cor_feature<-function(fname, baseline, ldm_name)
   RT_data_use<-left_join(RT_data, feature_data, by = join_by("stimuli_join"== "stimuli", ))
   cor_data<-RT_data_use%>% select(c("m_RT", "congruent", "Letters_n", "Syllables_n", "logUKWAC", "logBBC", "logBNC", ldm_name ))
   RT_data_use$logSUBTITLES<-RT_data_use$logBBC
-  RT_data_use$stimuli_join
-  #View(RT_data_use[, c("stimuli_join", "m_RT", "congruent", "llama2_namesUpper.csv")])
-  #cor(RT_data_use$m_RT, RT_data_use$llama2_namesUpper.csv)
-  #cor(RT_data_use$m_RT, RT_data_use$congruent)
-  #cor(RT_data_use$llama2_namesUpper.csv, RT_data_use$congruent)
-  
-  
+
   cor_data$congruent<-cor_data$congruent*1
   cor_table<-stats::cor(cor_data)
   
@@ -101,7 +85,7 @@ cor_feature<-function(fname, baseline, ldm_name)
   
   cor_congruent<-stats::cor(cor_data$congruent, cor_data[,8])
   
-  print(kable(cor_table))
+  print(kable(cor_table)) 
 
   b_model<-lm_model(baseline, TRUE,  RT_data_use)
 
@@ -110,6 +94,7 @@ cor_feature<-function(fname, baseline, ldm_name)
   res<-lm_model(f,TRUE, RT_data_use)  
   
   tab<-tab_model(b_model, res)
+  # Formating for report
   cat(tab$page.style)
   cat(tab$page.content)
  
@@ -126,12 +111,6 @@ cor_feature<-function(fname, baseline, ldm_name)
   cat("\\n### VIF analysis: VIF value greater than 1.5 indicates multicollinearity")
   print(kable(car::vif(res)))
   pv = round(compare$`Pr(>F)`[2],3)
-  
-  
-  
-  # if (pv<0.05) out_result<- c(lmd = ldm_name, cor = round(cor_LDM,3), coef = round(res$coefficients[[6]],2) ,  p_value = pv, BIC = round(BIC(res),1))
-  # else
-  #   out_result<-NULL
   
   out_result<- c(lmd = ldm_name, baseline = baseline,
                  corLDMmRT = round(cor_LDM,3), 
@@ -210,7 +189,7 @@ for (i in 1:length(init[,1])){
     name<-gsub("[.]", "_", name)
     #baseline<- paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3])
     md.log(paste0(name, " - started"))
-    out<-rbind(out, cor_feature(j, paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3]), name))  
+    out<-rbind(out, add_feature(j, paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3]), name))  
     md.log(" -- done -- ")
     }
 }
