@@ -331,6 +331,10 @@ c<-c + guides(colour="none")
 
 plot_grid(c,c1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
 ggsave("Correlations_fig.png",width =2400, height  = 3200,  units = "px", dpi = 300 )
+
+plot_grid(p,p1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
+ggsave("BIC_fig.png",width =2400, height  = 3200,  units = "px", dpi = 300 )
+
 plot_grid(c,c1,p,p1, align = "hv", ncol = 2, rel_heights = c(1/2, 1/2), labels = c("a", "b", "c","d"))
 ggsave("COR_BIC_fig.png",width =2400, height  = 3200,  units = "px", dpi = 300 )
 ```
