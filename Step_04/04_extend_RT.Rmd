@@ -36,21 +36,21 @@ for(i in 1:2)
 
     head(RT_data)
 
-    frq_data<-fread("NSyllabus_check.csv")
+    frq_data<-fread(paste0(path,"\\in_constants\\NSyllabus_check.csv"))
     frq_data$Word<-tolower(frq_data$Word)
     RT_data<-left_join(RT_data,frq_data, by = join_by("stimuli"== "Word"))
     head(RT_data)
     
-    frq_data<-fread("subtitles_freq.csv")
+    frq_data<-fread(paste0(path,"\\in_constants\\subtitles_freq.csv"))
     names(frq_data)[2]<-"BBC_freq"
     RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
     
     
-    frq_data<-fread("bnc_freq.csv")
+    frq_data<-fread(paste0(path,"\\in_constants\\bnc_freq.csv"))
     names(frq_data)[2]<-"BNC_freq"
     RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
     
-    frq_data<-fread("ukwac_freq.csv")
+    frq_data<-fread(paste0(path,"\\in_constants\\ukwac_freq.csv"))
     names(frq_data)[2]<-"UKWAC_freq"
     RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
     head(RT_data)

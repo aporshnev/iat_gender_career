@@ -19,6 +19,7 @@ library(performance)
 library(md.log)
 library(psych) # needed for cor.ci
 library(tidyr)
+library(lmerTest)
 
 
 
@@ -40,7 +41,8 @@ cat(paste0("\n#### BIC: ",BIC_r_model, "\n\n\n"))
 return (r_model)
 }
 
-add_feature<-function(fname, baseline, ldm_name)
+
+add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE)
 {
   feature_data<-fread(fname)
   
@@ -71,10 +73,10 @@ add_feature<-function(fname, baseline, ldm_name)
   RT_data$stimuli_join<-paste0(RT_data$stimuli, "_", RT_data$trial_response)
 
   RT_data_use<-left_join(RT_data, feature_data, by = join_by("stimuli_join"== "stimuli", ))
-  cor_data<-RT_data_use%>% select(c("m_RT", "congruent", "Letters_n", "Syllables_n", "logUKWAC", "logBBC", "logBNC", ldm_name ))
+  cor_data<-RT_data_use %>% select(c("m_RT", "congruent", "Letters_n", "Syllables_n", "logUKWAC", "logBBC", "logBNC", ldm_name ))
   RT_data_use$logSUBTITLES<-RT_data_use$logBBC
 
-  cor_data$congruent<-cor_data$congruent*1
+  #cor_data$congruent<-cor_data$congruent*1
   cor_table<-stats::cor(cor_data)
   
   cor_CI<-cor.ci(cor_data)
@@ -85,40 +87,57 @@ add_feature<-function(fname, baseline, ldm_name)
   
   cor_congruent<-stats::cor(cor_data$congruent, cor_data[,8])
   
+  print("EX1")
   print(kable(cor_table)) 
-
-  b_model<-lm_model(baseline, TRUE,  RT_data_use)
+regression_type = FALSE
+  b_model<-lm_model(baseline, regression_type,  RT_data_use)
 
   f <- paste0(baseline, paste0(" + ", ldm_name))
 
-  res<-lm_model(f,TRUE, RT_data_use)  
+  res<-lm_model(f,regression_type, RT_data_use)  
   
+  #Comparison baseline with LDM
   tab<-tab_model(b_model, res)
-  # Formating for report
+  # Formating for nice output in html 
   cat(tab$page.style)
   cat(tab$page.content)
  
   f_congr <- paste0(baseline, paste0(" + ", ldm_name, "+ congruent"))
-  res_congr<-lm_model(f_congr,TRUE, RT_data_use)  
+  res_congr<-lm_model(f_congr,regression_type, RT_data_use)  
   
+  #Comparison LDM and LDM with congruency
   tab<-tab_model(res, res_congr)
   cat(tab$page.style)
   cat(tab$page.content)
-  
-  res$coefficients[6]
+
   compare <- anova(b_model, res)
   print(kable(compare))
   cat("\\n### VIF analysis: VIF value greater than 1.5 indicates multicollinearity")
   print(kable(car::vif(res)))
-  pv = round(compare$`Pr(>F)`[2],3)
+
+
   
-  out_result<- c(lmd = ldm_name, baseline = baseline,
+  if (regression_type == FALSE) {
+  pv = round(compare$`Pr(>Chisq)`[2],3)
+        r<-summary(res)
+    out_result<- c(lmd = ldm_name, baseline = baseline,
+                 corLDMmRT = round(cor_LDM,3), 
+                 corLDMmRT_CI_lower = round(cor_LDM_CI_lower,3), 
+                 corLDMmRT_CI_upper = round(cor_LDM_CI_upper,3), 
+                 corLDM_congruent = cor_congruent, 
+                 coef = round(r$coefficients[5,1],2),  
+                 p_value = pv, 
+                 BIC = round(BIC(res),1))
+  }
+  else{
+    pv = round(compare$`Pr(>F)`[2],3)
+    out_result<- c(lmd = ldm_name, baseline = baseline,
                  corLDMmRT = round(cor_LDM,3), 
                  corLDMmRT_CI_lower = round(cor_LDM_CI_lower,3), 
                  corLDMmRT_CI_upper = round(cor_LDM_CI_upper,3), 
                  corLDM_congruent = cor_congruent, 
                  coef = round(res$coefficients[[6]],2),  
-                 p_value = pv, BIC = round(BIC(res),1))
+                 p_value = pv, BIC = round(BIC(res),1))}
 
   return (out_result)
 }  
@@ -130,34 +149,34 @@ add_feature<-function(fname, baseline, ldm_name)
 ## LDM features vs baseline model BNC
 
 ```{r}
-sample_name <- "B"
 corpora_name<-c("subtitles", "bnc", "ukwac")
 init<-NULL
 j<-1
+path = getwd()
 for (j in 1:3)
   {
   init<-rbind(init, 
-               c(path ="C:/Alex/Maynooth/IAT/Gender-Career/Distances/n-gram/",
+               c(path =paste0(path, "/in_Distances/n-gram/"),
                    pattern = paste0("", corpora_name[j]),
                  freq = paste0("log", toupper(corpora_name[j])))
               ,
-              c(path ="C:/Alex/Maynooth/IAT/Gender-Career/Distances/Cosine/",
+              c(path =paste0(path,"/in_Distances/Cosine/"),
                pattern=paste0("cos_", corpora_name[j]),
                freq = paste0("log", toupper(corpora_name[j]))
                ),
 
-               c(path ="C:/Alex/Maynooth/IAT/Gender-Career/Distances/Euclidean/",
+               c(path =paste0(path,"/in_Distances/Euclidean/"),
                  pattern=paste0("euc_", corpora_name[j]),
                  freq = paste0("log", toupper(corpora_name[j]))
                  ),
-               c(path ="C:/Alex/Maynooth/IAT/Gender-Career/Distances/Correlation/",
+               c(path =paste0(path,"/in_Distances/Correlation/"),
                    pattern = paste0("cor_", corpora_name[j]),
                    freq = paste0("log", toupper(corpora_name[j]))
                  ),
-              c(path ="C:/Alex/Maynooth/IAT/Gender-Career/Distances/llms/",
+              c(path =paste0(path,"/in_Distances/llms/"),
                   pattern = paste0(".csv"),
                   freq = paste0("log", toupper(corpora_name[j]))),
-              c(path ="C:/Alex/Maynooth/IAT/Gender-Career/Distances/GloVe_distances/",
+              c(path =paste0(path,"/in_Distances/GloVe_distances/"),
                   pattern = paste0(".csv"),
                   freq = paste0("log", toupper(corpora_name[j])))
             )
@@ -167,37 +186,38 @@ out<-NULL
 i=5
 md.log("Start","feature_testing.log", append = FALSE)
 
-RT_data<-fread(paste0("03_EXT_RT\\RT_2005_2021_extended_", sample_name, ".csv"))
-i=1
-for (i in 1:length(init[,1])){
-  cor_files<-list.files(init[i,1], init[i,2], all.files=FALSE, include.dirs = FALSE,
-  full.names=FALSE)
-  features_data<-paste0(init[i,1], cor_files) 
-  f_files<-t(as.data.frame(str_split(features_data, "[/]"))[8,])
-  rownames(f_files)<-NULL
-  colnames(f_files)<-"Filename"
-  cat(paste0("\n\n\n### Files for   ",init[i,2], "\n"))
-  print(kable(f_files), caption = "Features list")
-  j=features_data[2]
-  for (j in features_data){
-    ldm_name<-unlist(str_split(j, "/"))[8]
-    cat(paste0("\n\n\n### LDM_feature:   ",ldm_name, "\n"))
-    fname<-j
-    #cor_feature(j, "m_RT ~ country + Letters_n + Syllables_n+", init[i,3]))
-    name<-gsub(".csv", "", ldm_name)
-    name<-gsub("[-]", "_", name)
-    name<-gsub("[.]", "_", name)
-    #baseline<- paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3])
-    md.log(paste0(name, " - started"))
-    out<-rbind(out, add_feature(j, paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3]), name))  
-    md.log(" -- done -- ")
+for (sample_name in c("A", "B")){
+  RT_data<-fread(paste0("in_RT_summary\\RT_2005_2021_extended_", sample_name, ".csv"))
+  for (i in 1:length(init[,1])){
+    cor_files<-list.files(init[i,1], init[i,2], all.files=FALSE, include.dirs = FALSE, full.names=FALSE)
+    features_data<-paste0(init[i,1], cor_files) 
+    f_files<-t(as.data.frame(str_split(features_data, "[/]"))[8,])
+    rownames(f_files)<-NULL
+    colnames(f_files)<-"Filename"
+    cat(paste0("\n\n\n### Files for   ",init[i,2], "\n"))
+    print(kable(f_files), caption = "Features list")
+    #j=features_data[2]
+    for (j in features_data){
+      s_name<-unlist(str_split(j, "/"))
+      ldm_name<-(s_name[length(s_name)])
+      cat(paste0("\n\n\n### LDM_feature:   ",ldm_name, "\n"))
+      fname<-j
+      # cor_feature(j, "m_RT ~ country + Letters_n + Syllables_n+", init[i,3]))
+      name<-gsub(".csv", "", ldm_name)
+      name<-gsub("[-]", "_", name)
+      name<-gsub("[.]", "_", name)
+      #baseline<- paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3])
+      md.log(paste0(name, " - started"))
+      baseline<-paste0("m_RT ~  (1|stimuli) + country +  Letters_n+", init[i,3])
+      out<-rbind(out, add_feature(j, paste0("m_RT ~  (1|stimuli) + country +  Letters_n+", init[i,3]),name, regression_type = FALSE))  #m_RT ~ country + Letters_n + Syllables_n+
+      md.log(" -- done -- ")
     }
 }
 
 #cat(paste0("\n\n\n### Summary \n"))
-fwrite(out, paste0("Summary\\Summary_table_", sample_name, "_llms_V1.csv"))
+fwrite(out, paste0("out_Summary\\Summary_table_", sample_name, "_llms_B1.csv"))
 #print(kable(out, caption = ""))
-
+}
 
 ```
 
