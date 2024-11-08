@@ -40,8 +40,19 @@ cat(paste0("\n#### BIC: ",BIC_r_model, "\n\n\n"))
 return (r_model)
 }
 
+corpora_from_baseline <- function(baseline_formula){
+  corpora_name<-NULL
+  if (grepl("logUKWAC",baseline_formula)>0) {
+    return ("ukwac")}
+  if (grepl("logSUBTITLES",baseline_formula)>0) {
+    return ("subtitles")}
+  if (grepl("logBNC",baseline_formula)>0) {
+    return("bnc")}
 
-add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE)
+    return ("na")
+}
+
+add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_name)
 {
   feature_data<-fread(fname)
   
@@ -88,7 +99,7 @@ add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE)
   
   print("EX1")
   print(kable(cor_table)) 
-regression_type = FALSE
+  regression_type = FALSE
   b_model<-lm_model(baseline, regression_type,  RT_data_use)
 
   f <- paste0(baseline, paste0(" + ", ldm_name))
@@ -96,23 +107,27 @@ regression_type = FALSE
   res<-lm_model(f,regression_type, RT_data_use)  
   
   #Comparison baseline with LDM
-  tab<-tab_model(b_model, res)
+  file_tab_model = paste0("out_Models\\", sample_name,"_", ldm_name,  "_", corpora_from_baseline(baseline), ".html")
+  print(tab_model(b_model, res, file = file_tab_model))
+  md.log(paste0(file_tab_model, "- saved"))
   # Formating for nice output in html 
-  cat(tab$page.style)
-  cat(tab$page.content)
+  #cat(tab$page.style)
+  #cat(tab$page.content)
  
   f_congr <- paste0(baseline, paste0(" + ", ldm_name, "+ congruent"))
   res_congr<-lm_model(f_congr,regression_type, RT_data_use)  
   
   #Comparison LDM and LDM with congruency
-  tab<-tab_model(res, res_congr)
-  cat(tab$page.style)
-  cat(tab$page.content)
+  file_tab_model = paste0("out_Models\\",sample_name, "_", ldm_name, "_", corpora_from_baseline(baseline), "_congruent.html")
+  print(tab_model(res, res_congr, file = file_tab_model))
+  md.log(paste0(file_tab_model, "- saved"))
+  #cat(tab$page.style)
+  #cat(tab$page.content)
 
   compare <- anova(b_model, res)
   print(kable(compare))
-  cat("\\n### VIF analysis: VIF value greater than 1.5 indicates multicollinearity")
-  print(kable(car::vif(res)))
+  #cat("\\n### VIF analysis: VIF value greater than 1.5 indicates multicollinearity")
+  #print(kable(car::vif(res)))
 
 
   
@@ -210,7 +225,7 @@ for (sample_name in c("A", "B")){
       baseline_formula <- paste0("m_RT ~  (1|stimuli) + country +  Letters_n+", init[i,3])
       #old baseline paste0("m_RT ~ country + Letters_n + Syllables_n+ , init[i,3])
       
-      out<-rbind(out, add_feature(j, baseline_formula, name, regression_type = FALSE))  
+      out<-rbind(out, add_feature(j, baseline_formula, name, regression_type = FALSE, sample_name))  
       
       md.log(" -- done -- ")
     }
