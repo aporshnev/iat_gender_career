@@ -91,7 +91,7 @@ for(i in 1:2)
     
     
     cat(paste0("\n", names(RT_data)))
-   RT_out_name<- paste0(path, "\\out_03_EXT_RT\\RT_2005_2021_extended_",sample_name, ".csv")
+   RT_out_name<- paste0(path, "\\out_EXTENDED_RT\\RT_2005_2021_extended_",sample_name, ".csv")
     fwrite(RT_data, RT_out_name)
 }
 
@@ -121,8 +121,8 @@ return (r_model)
 ## Correlation check
 
 ```{r corr}
-RT_A_name<- paste0(path, "\\out_03_EXT_RT\\RT_2005_2021_extended_A.csv")
-RT_B_name<- paste0(path, "\\out_03_EXT_RT\\RT_2005_2021_extended_B.csv")
+RT_A_name<- paste0(path, "\\out_EXTENDED_RT\\RT_2005_2021_extended_A.csv")
+RT_B_name<- paste0(path, "\\out_EXTENDED_RT\\RT_2005_2021_extended_B.csv")
 
 RT_dataA <- fread(RT_A_name)
 RT_dataB <- fread(RT_B_name)
@@ -196,7 +196,7 @@ for (f in formula_to_check){
   res<-lm_model(f, FALSE, RT_dataB)  
   BIC_baseline<-rbind(BIC_baseline, c("model" = f, "BIC" = round(BIC(res),2), sample = "B"))
 }
- BIC_out_name<- paste0(path, "\\out_03_EXT_RT\\BIC.csv")
+ BIC_out_name<- paste0(path, "\\out_EXTENDED_RT\\BIC.csv")
  fwrite(BIC_baseline, file = BIC_out_name)
 ```
 
