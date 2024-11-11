@@ -99,11 +99,10 @@ add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_
   
   print("EX1")
   print(kable(cor_table)) 
-  regression_type = FALSE
+
   b_model<-lm_model(baseline, regression_type,  RT_data_use)
 
   f <- paste0(baseline, paste0(" + ", ldm_name))
-
   res<-lm_model(f,regression_type, RT_data_use)  
   
   #Comparison baseline with LDM
@@ -125,7 +124,7 @@ add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_
   #cat(tab$page.content)
 
   compare <- anova(b_model, res)
-  print(kable(compare))
+  print(kable(compare, caption = "Baseline vs LDM feature"))
   #cat("\\n### VIF analysis: VIF value greater than 1.5 indicates multicollinearity")
   #print(kable(car::vif(res)))
 
@@ -150,12 +149,11 @@ add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_
                  corLDMmRT_CI_lower = round(cor_LDM_CI_lower,3), 
                  corLDMmRT_CI_upper = round(cor_LDM_CI_upper,3), 
                  corLDM_congruent = cor_congruent, 
-                 coef = round(res$coefficients[[6]],2),  
+                 coef = round(res$coefficients[ldm_name],2),  
                  p_value = pv, BIC = round(BIC(res),1))}
 
   return (out_result)
 }  
-
 ```
 
 
@@ -219,19 +217,20 @@ for (sample_name in c("A", "B")){
       name<-gsub(".csv", "", ldm_name)
       name<-gsub("[-]", "_", name) # need because of - and . in names of llms [TBD] [-.]
       name<-gsub("[.]", "_", name)
-      #baseline<- paste0("m_RT ~ country + Letters_n + Syllables_n+", init[i,3])
       md.log(paste0(name, " - started"))
       
-      baseline_formula <- paste0("m_RT ~  (1|stimuli) + country +  Letters_n+", init[i,3])
-      #old baseline paste0("m_RT ~ country + Letters_n + Syllables_n+ , init[i,3])
+      baseline_formula <- paste0("m_RT ~ country +  Letters_n + ", init[i,3])
+      #classic:  paste0("m_RT ~ country + Letters_n + Syllables_n+ ", init[i,3])
+      #simple:  paste0("m_RT ~ country +  Letters_n + ", init[i,3])
+      #mixed: paste0("m_RT ~  (1|stimuli) + country +  Letters_n+", init[i,3])
       
-      out<-rbind(out, add_feature(j, baseline_formula, name, regression_type = FALSE, sample_name))  
+      out<-rbind(out, add_feature(j, baseline_formula, name, regression_type = TRUE, sample_name))  
       
       md.log(" -- done -- ")
     }
 }
 
-fwrite(out, paste0("out_Summary\\Summary_table_", sample_name, "_llms_mmb.csv"))
+fwrite(out, paste0("out_Summary\\Summary_table_", sample_name, "_llms.csv"))
 #mmb - for mixed models baseline  m_RT ~  (1|stimuli) + country +  Letters_n
 }
 

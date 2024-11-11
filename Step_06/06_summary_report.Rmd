@@ -36,10 +36,10 @@ getBIC <- function (df_BIC, corpora_name, sample_name ){
 
 ```{r Reading&Transforming data from modelling output}
 #Reading data from modelling output for sample A&B
-dA<- fread("in_Summary\\Summary_table_A_llms_V1.csv")
+dA<- fread("in_Summary\\Summary_table_A_llms_mmb.csv")
 dA$ext_model<-paste0(dA$lmd, dA$baseline)
 
-dB<- fread("in_Summary\\Summary_table_B_llms_V1.csv")
+dB<- fread("in_Summary\\Summary_table_B_llms_mmb.csv")
 dB$ext_model<-paste0(dB$lmd, dB$baseline)
 
 dR<- left_join(dA, dB, by = join_by("ext_model" == "ext_model"), suffix = c("_A", "_B"))
@@ -165,7 +165,7 @@ for (i in 1:length(t_mdls$name)){
 ```{r adding BIC }
 
 # BIC baseline calculated in previous steps
-d_BIC<-read.csv("..\\Step_04\\out_03_EXT_RT\\BIC.csv")
+d_BIC<-read.csv("..\\Step_04\\out_EXTENDED_RT\\BIC_mmb.csv")
 View(d_BIC)
 d_BIC$corpora<-NA
 d_BIC$corpora[grep("logUKWAC", d_BIC$model)] <-"ukwac"
