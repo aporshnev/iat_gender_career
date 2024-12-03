@@ -52,6 +52,7 @@ corpora_from_baseline <- function(baseline_formula){
     return ("na")
 }
 
+
 add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_name)
 {
   feature_data<-fread(fname)
@@ -168,29 +169,30 @@ path = getwd()
 for (j in 1:3)
   {
   init<-rbind(init, 
-               c(path =paste0(path, "/in_Distances/n-gram/"),
-                   pattern = paste0("", corpora_name[j]),
-                 freq = paste0("log", toupper(corpora_name[j])))
-              ,
-              c(path =paste0(path,"/in_Distances/Cosine/"),
-               pattern=paste0("cos_", corpora_name[j]),
-               freq = paste0("log", toupper(corpora_name[j]))
-               ),
-
-               c(path =paste0(path,"/in_Distances/Euclidean/"),
-                 pattern=paste0("euc_", corpora_name[j]),
-                 freq = paste0("log", toupper(corpora_name[j]))
-                 ),
-               c(path =paste0(path,"/in_Distances/Correlation/"),
-                   pattern = paste0("cor_", corpora_name[j]),
-                   freq = paste0("log", toupper(corpora_name[j]))
-                 ),
-              c(path =paste0(path,"/in_Distances/llms/"),
-                  pattern = paste0(".csv"),
-                  freq = paste0("log", toupper(corpora_name[j]))),
-              c(path =paste0(path,"/in_Distances/GloVe_distances/"),
+              #  c(path =paste0(path, "/in_Distances/n-gram/"),
+              #      pattern = paste0("", corpora_name[j]),
+              #    freq = paste0("log", toupper(corpora_name[j])))
+              # ,
+              # c(path =paste0(path,"/in_Distances/Cosine/"),
+              #  pattern=paste0("cos_", corpora_name[j]),
+              #  freq = paste0("log", toupper(corpora_name[j]))
+              #  ),
+              # 
+              #  c(path =paste0(path,"/in_Distances/Euclidean/"),
+              #    pattern=paste0("euc_", corpora_name[j]),
+              #    freq = paste0("log", toupper(corpora_name[j]))
+              #    ),
+              #  c(path =paste0(path,"/in_Distances/Correlation/"),
+              #      pattern = paste0("cor_", corpora_name[j]),
+              #      freq = paste0("log", toupper(corpora_name[j]))
+              #    ),
+               c(path =paste0(path,"/in_Distances/llms_systematic/"),
                   pattern = paste0(".csv"),
                   freq = paste0("log", toupper(corpora_name[j])))
+              # ,
+              # c(path =paste0(path,"/in_Distances/GloVe_distances/"),
+              #     pattern = paste0(".csv"),
+              #     freq = paste0("log", toupper(corpora_name[j])))
             )
   
 }
@@ -209,7 +211,7 @@ for (sample_name in c("A", "B")){
     colnames(f_files)<-"Filename"
     cat(paste0("\n\n\n### Files for   ",init[i,2], "\n"))
     print(kable(f_files), caption = "Features list")
-    #j=features_data[2]
+    j=features_data[31]
     for (j in features_data){
       s_name<-unlist(str_split(j, "/"))
       ldm_name<-(s_name[length(s_name)])
@@ -219,14 +221,15 @@ for (sample_name in c("A", "B")){
       name<-gsub("[.]", "_", name)
       md.log(paste0(name, " - started"))
       
-      baseline_formula <- paste0("m_RT ~ country +  Letters_n + ", init[i,3])
+      baseline_formula <-  paste0("m_RT ~ country + Letters_n + Syllables_n+ ", init[i,3])
       #classic:  paste0("m_RT ~ country + Letters_n + Syllables_n+ ", init[i,3])
       #simple:  paste0("m_RT ~ country +  Letters_n + ", init[i,3])
       #mixed: paste0("m_RT ~  (1|stimuli) + country +  Letters_n+", init[i,3])
       
-      out<-rbind(out, add_feature(j, baseline_formula, name, regression_type = TRUE, sample_name))  
-      
-      md.log(" -- done -- ")
+      #tryCatch(
+      out<-rbind(out, add_feature(j, baseline_formula, name, regression_type = TRUE, sample_name))
+      #), error = function(e){ md.log("failed")})
+        md.log(" -- done -- ")
     }
 }
 
