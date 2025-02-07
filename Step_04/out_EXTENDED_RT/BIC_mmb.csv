@@ -1,0 +1,7 @@
+model,BIC,sample
+m_RT ~  (1|stimuli) + country +  Letters_n+ logUKWAC,1147.71,A
+m_RT ~  (1|stimuli) + country +  Letters_n + logBBC,1149.13,A
+m_RT ~  (1|stimuli) + country +  Letters_n + logBNC,1147.89,A
+m_RT ~  (1|stimuli) + country +  Letters_n+ logUKWAC,1149.09,B
+m_RT ~  (1|stimuli) + country +  Letters_n + logBBC,1150.56,B
+m_RT ~  (1|stimuli) + country +  Letters_n + logBNC,1149.29,B
