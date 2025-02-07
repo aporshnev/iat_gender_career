@@ -1,0 +1,44 @@
+---
+title: "1a_preprocessing"
+author: "Alexander Porshnev"
+date: "2024-08-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(dplyr)
+library(knitr)
+library(data.table)
+```
+
+## User id analysis by year
+
+```{r preprocessing 1a}
+#year<-2015
+#setwd("D:\\Jul24_stage4")
+stats<-NULL
+for(year in 2005:2021)
+{
+  stats_year<-NULL
+  stats_year<-cbind(stats_year, year = year)
+  t_clean <- fread(file= paste0("01_Clean/t_", year, ".csv"), colClasses=c("session_id" = "character"))
+  p_clean <- fread(file= paste0("01_Clean/p_", year, ".csv"), colClasses=c("session_id" = "character"))
+  stats_year<-cbind(stats_year, In = nrow(p_clean))
+  p_clean_no_experience<-p_clean %>% filter(if_any(previous_session_id, is.na))
+  stats_year<-cbind(stats_year, by_previous_session = nrow(p_clean_no_experience))
+  p_clean_no_experience<-p_clean_no_experience %>% filter(user_id<1)
+  stats_year<-cbind(stats_year, by_user_id = nrow(p_clean_no_experience))
+  
+  stats<-rbind(stats, stats_year)
+  print(kable(table(p_clean_no_experience$user_id), caption = paste0(year, ": User id")))
+  print(kable(table(is.na(p_clean_no_experience$user_id)), caption = paste0(year, ": User id")))
+  t_clean_no_experience <- t_clean %>% filter(session_id %in% p_clean_no_experience$session_id)
+
+  fwrite(t_clean_no_experience, file= paste0("Clean_noexp/t_", year, ".csv"))
+  fwrite(p_clean_no_experience, file= paste0("Clean_noexp/p_", year, ".csv"))
+  fwrite(stats, file= paste0("Clean_noexp/stats_", year, ".csv"))
+}
+
+```
+
