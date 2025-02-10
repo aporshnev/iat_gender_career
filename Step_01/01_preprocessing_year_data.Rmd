@@ -1,5 +1,5 @@
 ---
-title: "Report_on_cleaning_raw_data"
+title: "Step 01. Cleaning_raw_data"
 author: "Alexander Porshnev"
 date: "2023-10-27"
 output: html_document
@@ -16,11 +16,6 @@ library(tidyr)
 ```
 
 ```{r d-OLD-calculations, results='asis'}
-#block1<-4
-#block2<-6
-#t_data<-test_t_data_no_dpl
-#p_data<-test_p_data
-
 d_calculations_old<- function(block1, block2, p_data, t_data){
 
 res1 <- t_data %>% filter(block_number %in% block1) %>% group_by(session_id) %>% summarize(M_block1 = mean(trial_latency), )
@@ -64,18 +59,13 @@ d_mean_old<-function(year, p_data, t_data){
 calc_D_block<-function(block, p_data, t_data){
 
 md.log(paste0(block, collapse = "\n"))
-#  block<-c(3,6)
-#  table(t_data$block_IAT, )
-  
+
 female <- c("Rebecca", "Michelle", "Emily", "Julia", "Anna")
 male <- c("Ben", "Paul", "Daniel", "John", "Jeffrey")
 career<-c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business")
 family<-c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children")
 responces <- c("Female/Career", "Female/Family", "Male/Career", "Male/Family", "Career/Male,Family/Female", "Family/Male,Career/Female")
 md.log(paste0(names(t_data), sep="", collapse = "\n"))
-
-
-#table(t_data$block_number, t_data$trial_name)
 
 
 table_c <- t_data %>% filter(block_IAT %in% block) %>% filter (trial_name  %in% c(female, male, career, family) & trial_def_IAT %in% responces ) 
@@ -107,7 +97,6 @@ check_d <- left_join(D_wide1, D_wide2, join_by("session_id"))
 check_d$D<-(check_d$D.x+check_d$D.y)/2
 
 p_check<-left_join(p_data, check_d, join_by("session_id"))
-#p_check$D_biep.Male_Career_36
 print(kable(head(p_check[,c("D", "D_biep.Male_Career_all", "D.x", "D_biep.Male_Career_36", "D.y", "D_biep.Male_Career_47")]), caption = "D from raw data and preprocessed from ocf storage"))
 
 return (p_check[,c("session_id", "D")])
@@ -115,18 +104,20 @@ return (p_check[,c("session_id", "D")])
 ```
 
 ```{r}
-#
-year<-2016
-#View(nrow(p_data))
+year<-2005
 t_prev_year_check<-NULL
+
 preprocess<-function(year, t_prev_year_check){
 stats<-NULL
 stats<-cbind(stats, year = year)
 
 init_dir <-"C:\\Alex\\Maynooth\\IAT\\Gender-Career\\source_Datasets" # "../../source_Datasets" 
 p_data_files<- paste0(init_dir, "/Gender-Career IAT.public.", year, "-CSV/Gender-Career IAT.public.", year, ".csv") 
+
 p_data <- fread(p_data_files, header = TRUE, sep =",", colClasses=c("session_id" = "character")) # participant level data
+
 stats<-cbind(stats, total = length(unique(p_data$session_id)))
+
 
 raw_data_dir<-paste0("C:\\Alex\\Maynooth\\IAT\\Gender-Career\\source_Datasets\\GenderCareer_iat_", year)
 data_files<-list.files(raw_data_dir)
@@ -136,7 +127,7 @@ data_files<-paste0(raw_data_dir,"/", data_files)
 jan_01_data<- p_data %>% filter(month==1 & day == 1)
 
 
-#md.log(years_to_load[i])
+#md.log(years_to_load[year])
 if (!is.null(t_prev_year_check)) {
   data_from_year<-t_prev_year_check %>% filter(session_id %in% jan_01_data$session_id) 
   cat(paste0("\n Found in previous year = ", length(unique(data_from_year$session_id))))
@@ -196,13 +187,12 @@ t_data$trial_error<-ifelse(t_data$trial_error==0,0,1) # recode all values not eq
   t_data$block_IAT <- t_data$block_number+1 #difference in numeration of blocks from 2005-2015, and >2016
   t_data$trial_def_IAT <- t_data$trial_response #
   t_data$trial_name<-sub("[|]","", t_data$trial_name) #problem with names of stimuli with added |
-  
-  test_p<- p_data %>% filter (countryres_num %in% c(1,225))
-  test_p1<- test_p %>% filter (!is.na(D_biep.Male_Career_all))
-  test_p2<- test_p1 %>% filter (birthyear<1999)
-  table(test_p1$birthyear)
-  table(test_p$countryres, test_p$countryres_num)
-
+  #test_p<- p_data %>% filter (countryres_num %in% c(1,225))
+  #test_p1<- test_p %>% filter (!is.na(D_biep.Male_Career_all))
+  #test_p2<- test_p1 %>% filter (birthyear<1999)
+  #table(test_p1$birthyear)
+  #table(test_p$countryres, test_p$countryres_num)
+ 
   if (as.numeric(year)>2015){
     t_data$trial_def_IAT <- t_data$block_pairing_definition
     t_data$block_IAT <- t_data$block_number #difference in numeration of blocks from 2005-2015, and >2016
@@ -243,14 +233,15 @@ t_data$trial_error<-ifelse(t_data$trial_error==0,0,1) # recode all values not eq
                                & !is.na(D_biep.Male_Career_all)# D in preprocessed file no NA
                                #No prior experience with IAT tasks #[TBD add p_clean$previous_session_id, p_clean$user_id
                                & age>17) #age>17
-
+  
   stats<-cbind(stats, UKUS_18 = length(unique(p_clean$session_id)))
   
 #trial level checks
 #[TBD] no additional stimuli 
 #D from raw data calculations equal D in pre-processed data
   
- 
+  t_clean<- t_data %>% filter(session_id %in% p_clean$session_id)
+  
   d_m <- d_mean_old(year, p_clean, t_clean)
     #d_mean_calc(p_clean, t_data)
   names(d_m)<-c("session_id","D") 
@@ -321,6 +312,7 @@ t_data$any_error <- t_data$quick_trial | t_data$trial_error | t_data$RT_outlier
 
 
 t_data_err_rate <- t_data %>% group_by(session_id) %>% summarise(err_rate = sum(any_error)/n())
+
 clean_ids<-t_data_err_rate$session_id[t_data_err_rate$err_rate<0.3]
 
 clean_ids<-intersect(p_clean$session_id, clean_ids)
@@ -345,9 +337,9 @@ t_clean <- t_data %>% filter (!any_error)
 p_clean_ids<- p_clean$session_id
 t_clean <- t_clean %>% filter(session_id %in% p_clean_ids)
 
-fwrite(t_clean, file= paste0("Clean/t_", year, ".csv"))
-fwrite(p_clean, file= paste0("Clean/p_", year, ".csv"))
-fwrite(stats, file= paste0("Clean/stats_", year, ".csv"))
+fwrite(t_clean, file= paste0("out_Clean/t_", year, ".csv"))
+fwrite(p_clean, file= paste0("out_Clean/p_", year, ".csv"))
+fwrite(stats, file= paste0("out_Clean/stats_", year, ".csv"))
 fwrite(t_prev_year_check, file= paste0("TMP/t_prev", year, ".csv"))
 prev_stats<-NULL
 
@@ -365,7 +357,7 @@ return (t_prev_year_check)
 ```{r}
 md.log("Start preprocessing", file="log_preprocessing.txt", append =FALSE, time = TRUE, sys.info = FALSE)
 t_prev <- NULL
-
+i<-2005
 for(i in 2005:2021)
 {
   md.log("------------")
