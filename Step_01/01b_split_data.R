@@ -1,15 +1,16 @@
 library(data.table)
 library(dplyr)
+#Module to split main data set into two subsets A and B balanced by country / year
+#!!!
+#Be careful this function overwrite the A and B samples!!!
+#!!!
 
-# Be careful this function overwrite the samples!!!
 split_clean_data_RT<-function(year){
-  path = "D:\\Jul24_stage4\\"
-  setwd(path)
-  
-  t_filename = paste0(path, "01a_Clean\\t_", year, ".csv")
+  path<-getwd()
+  t_filename = paste0(path, "/Step_01/out_1a_Clean_noexp/t_", year, ".csv")
   t_data_d <- fread(t_filename)
   
-  p_filename = paste0(path, "01a_Clean\\p_", year, ".csv")
+  p_filename = paste0(path, "/Step_01/out_1a_Clean_noexp/p_", year, ".csv")
   p_data_d <- fread(p_filename)
   
   p_data_US<-p_data_d %>% filter(countryres == "US")
@@ -27,8 +28,8 @@ split_clean_data_RT<-function(year){
   p_data_A <- p_data_d %>% filter(session_id %in% ids_subsetA)  
   t_data_A <- t_data_d %>% filter(session_id %in% ids_subsetA)
   
-  p_filenameA = paste0(path, "01b_Split\\p_",year, "_A.csv")
-  t_filenameA = paste0(path, "01b_Split\\t_",year, "_A.csv")
+  p_filenameA = paste0(path, "/Step_01/out_1b_Split/p_",year, "_A.csv")
+  t_filenameA = paste0(path, "/Step_01/out_1b_Split/t_",year, "_A.csv")
   
   fwrite(p_data_A, p_filenameA)
   fwrite(t_data_A, t_filenameA)
@@ -36,8 +37,8 @@ split_clean_data_RT<-function(year){
   p_data_B <- p_data_d %>% filter(session_id %in% ids_subsetB)  
   t_data_B <- t_data_d %>% filter(session_id %in% ids_subsetB)
   
-  p_filenameB = paste0(path, "01b_Split\\p_",year, "_B.csv")
-  t_filenameB = paste0(path, "01b_Split\\t_",year, "_B.csv")
+  p_filenameB = paste0(path, "/Step_01/out_1b_Split/p_",year, "_B.csv")
+  t_filenameB = paste0(path, "/Step_01/out_1b_Split/t_",year, "_B.csv")
   
   fwrite(p_data_B, p_filenameB)
   fwrite(t_data_B, t_filenameB)

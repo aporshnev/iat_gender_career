@@ -6,6 +6,9 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+
+#Check if participant had previous experience with this or other IAT (in 15 minutes frame) and filter them out
+
 knitr::opts_chunk$set(echo = FALSE)
 library(dplyr)
 library(knitr)
@@ -22,8 +25,8 @@ for(year in 2005:2021)
 {
   stats_year<-NULL
   stats_year<-cbind(stats_year, year = year)
-  t_clean <- fread(file= paste0("01_Clean/t_", year, ".csv"), colClasses=c("session_id" = "character"))
-  p_clean <- fread(file= paste0("01_Clean/p_", year, ".csv"), colClasses=c("session_id" = "character"))
+  t_clean <- fread(file= paste0("out_1_Clean/t_", year, ".csv"), colClasses=c("session_id" = "character"))
+  p_clean <- fread(file= paste0("out_1_Clean/p_", year, ".csv"), colClasses=c("session_id" = "character"))
   stats_year<-cbind(stats_year, In = nrow(p_clean))
   p_clean_no_experience<-p_clean %>% filter(if_any(previous_session_id, is.na))
   stats_year<-cbind(stats_year, by_previous_session = nrow(p_clean_no_experience))
@@ -35,9 +38,9 @@ for(year in 2005:2021)
   print(kable(table(is.na(p_clean_no_experience$user_id)), caption = paste0(year, ": User id")))
   t_clean_no_experience <- t_clean %>% filter(session_id %in% p_clean_no_experience$session_id)
 
-  fwrite(t_clean_no_experience, file= paste0("Clean_noexp/t_", year, ".csv"))
-  fwrite(p_clean_no_experience, file= paste0("Clean_noexp/p_", year, ".csv"))
-  fwrite(stats, file= paste0("Clean_noexp/stats_", year, ".csv"))
+  fwrite(t_clean_no_experience, file= paste0("out_1a_Clean_noexp/t_", year, ".csv"))
+  fwrite(p_clean_no_experience, file= paste0("out_1a_Clean_noexp/p_", year, ".csv"))
+  fwrite(stats, file= paste0("out_1a_Clean_noexp/stats_", year, ".csv"))
 }
 
 ```

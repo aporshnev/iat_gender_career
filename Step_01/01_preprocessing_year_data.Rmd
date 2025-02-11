@@ -6,6 +6,8 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
+# Main data preprocessing
+
 knitr::opts_chunk$set(echo = FALSE, results = 'asis', warning = FALSE)
 library(dplyr)
 library(knitr)
