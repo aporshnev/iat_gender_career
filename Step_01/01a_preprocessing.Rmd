@@ -18,7 +18,7 @@ library(data.table)
 ## User id analysis by year
 
 ```{r preprocessing 1a}
-#year<-2015
+#year<-2005
 #setwd("D:\\Jul24_stage4")
 stats<-NULL
 for(year in 2005:2021)
@@ -26,9 +26,10 @@ for(year in 2005:2021)
   stats_year<-NULL
   stats_year<-cbind(stats_year, year = year)
   t_clean <- fread(file= paste0("out_1_Clean/t_", year, ".csv"), colClasses=c("session_id" = "character"))
-  p_clean <- fread(file= paste0("out_1_Clean/p_", year, ".csv"), colClasses=c("session_id" = "character"))
+  p_clean <- fread(file= paste0("out_1_Clean/p_", year, ".csv"), colClasses=c("session_id" = "character"))#, previous_session_id = "character"))
   stats_year<-cbind(stats_year, In = nrow(p_clean))
-  p_clean_no_experience<-p_clean %>% filter(if_any(previous_session_id, is.na))
+  p_clean$previous_session_id[is.na(p_clean$previous_session_id)]<-0
+  p_clean_no_experience<-p_clean %>% filter(previous_session_id==0)
   stats_year<-cbind(stats_year, by_previous_session = nrow(p_clean_no_experience))
   p_clean_no_experience<-p_clean_no_experience %>% filter(user_id<1)
   stats_year<-cbind(stats_year, by_user_id = nrow(p_clean_no_experience))
