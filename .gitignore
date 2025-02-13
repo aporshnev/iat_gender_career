@@ -6,3 +6,5 @@
 *.html
 **/*.html
 log.txt
+**/*.csv
+**/**/*.csv
