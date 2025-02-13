@@ -19,6 +19,7 @@ library(performance)
 ```
 
 ```{r}
+setwd("..")
 path = getwd()
 
 sample_name = "A"
@@ -28,7 +29,7 @@ samples<-c("A", "B")
 for(i in 1:2)
   {
     sample_name =samples[i]
-    RT_data_name<-paste0(path,"\\02a_Merge\\RT_2005_2021", "_", sample_name,".csv")
+    RT_data_name<-paste0(path,"/Step_02/out_2a_RT_merged/RT_2005_2021", "_", sample_name,".csv")
     RT_data<-fread(RT_data_name)
     
     names(RT_data)[3]<-"m_RT"
@@ -36,21 +37,21 @@ for(i in 1:2)
 
     head(RT_data)
 
-    frq_data<-fread("NSyllabus_check.csv")
+    frq_data<-fread(paste0(path,"/in_Control/NSyllabus_check.csv"))
     frq_data$Word<-tolower(frq_data$Word)
     RT_data<-left_join(RT_data,frq_data, by = join_by("stimuli"== "Word"))
     head(RT_data)
     
-    frq_data<-fread("subtitles_freq.csv")
+    frq_data<-fread(paste0(path,"/in_Control/subtitles_freq.csv"))
     names(frq_data)[2]<-"BBC_freq"
     RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
     
     
-    frq_data<-fread("bnc_freq.csv")
+    frq_data<-fread(paste0(path,"/in_Control/bnc_freq.csv"))
     names(frq_data)[2]<-"BNC_freq"
     RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
     
-    frq_data<-fread("ukwac_freq.csv")
+    frq_data<-fread(paste0(path,"/in_Control/ukwac_freq.csv"))
     names(frq_data)[2]<-"UKWAC_freq"
     RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
     head(RT_data)
@@ -91,7 +92,7 @@ for(i in 1:2)
     
     
     cat(paste0("\n", names(RT_data)))
-   RT_out_name<- paste0(path, "\\03_EXT_RT\\RT_2005_2021_extended_",sample_name, ".csv")
+   RT_out_name<- paste0(path, "/Step_03/out_3_EXT_RT/RT_2005_2021_extended_",sample_name, ".csv")
     fwrite(RT_data, RT_out_name)
 }
 
@@ -121,8 +122,8 @@ return (r_model)
 ## Correlation check
 
 ```{r corr}
-RT_A_name<- paste0(path, "\\03_EXT_RT\\RT_2005_2021_extended_A.csv")
-RT_B_name<- paste0(path, "\\03_EXT_RT\\RT_2005_2021_extended_B.csv")
+RT_A_name<- paste0(path, "/Step_03/out_3_EXT_RT/RT_2005_2021_extended_A.csv")
+RT_B_name<- paste0(path, "/Step_03/out_3_EXT_RT/RT_2005_2021_extended_B.csv")
 
 RT_dataA <- fread(RT_A_name)
 RT_dataB <- fread(RT_B_name)
@@ -175,24 +176,29 @@ for (f in formula_to_check){
 ```
 ## Mixed models - baseline sample A
 ```{r}
-formula_to_check<-c("m_RT ~  (1|stimuli) + country +  Letters_n",
-                     "m_RT ~  (1|stimuli) + country +  Letters_n+ logUKWAC",
-                     "m_RT ~  (1|stimuli) + country +  Letters_n + logBBC",
-                     "m_RT ~  (1|stimuli) + country +  Letters_n + logBNC")
+BIC_baseline <- NULL
+
+#classic: "m_RT ~ country +  Letters_n + Syllables_n + logUKWAC"
+#simple: simple "m_RT ~ country +  Letters_n + logUKWAC"
+#mixed: mmb "m_RT ~ (1|stimuli) + country +  Letters_n + logUKWAC"
+
+formula_to_check <- c("m_RT ~  country +  Letters_n + Syllables_n + logUKWAC",
+                      "m_RT ~  country +  Letters_n + Syllables_n + logBBC",
+                      "m_RT ~  country +  Letters_n + Syllables_n + logBNC")
 for (f in formula_to_check){
-  res<-lm_model(f,FALSE, RT_dataA)  
+  res<-lm_model(f,TRUE, RT_dataA)  
+  BIC_baseline<-rbind(BIC_baseline, c("model" = f, "BIC" = round(BIC(res),2), sample = "A"))
+  
 }
-```
 
 ## Mixed models - baseline sample B
-```{r}
-formula_to_check<-c("m_RT ~  (1|stimuli) + country +  Letters_n",
-                     "m_RT ~  (1|stimuli) + country +  Letters_n+ logUKWAC",
-                     "m_RT ~  (1|stimuli) + country +  Letters_n + logBBC",
-                     "m_RT ~  (1|stimuli) + country +  Letters_n + logBNC")
+
 for (f in formula_to_check){
-  res<-lm_model(f,FALSE, RT_dataB)  
+  res<-lm_model(f, TRUE, RT_dataB)  
+  BIC_baseline<-rbind(BIC_baseline, c("model" = f, "BIC" = round(BIC(res),2), sample = "B"))
 }
+ BIC_out_name<- paste0(path, "/Step_03/out_3_EXT_RT/BIC_classic.csv")
+ fwrite(BIC_baseline, file = BIC_out_name)
 ```
 
 
