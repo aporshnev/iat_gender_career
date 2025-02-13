@@ -1,7 +1,0 @@
-model,BIC,sample
-m_RT ~  country +  Letters_n + logUKWAC,1173.01,A
-m_RT ~  country +  Letters_n + logBBC,1176.28,A
-m_RT ~  country +  Letters_n + logBNC,1173.76,A
-m_RT ~  country +  Letters_n + logUKWAC,1174.19,B
-m_RT ~  country +  Letters_n + logBBC,1177.51,B
-m_RT ~  country +  Letters_n + logBNC,1174.96,B

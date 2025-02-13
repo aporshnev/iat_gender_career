@@ -1,7 +1,0 @@
-model,BIC,sample
-m_RT ~  country +  Letters_n + Syllables_n + logUKWAC,1177.56,A
-m_RT ~  country +  Letters_n + Syllables_n + logBBC,1180.82,A
-m_RT ~  country +  Letters_n + Syllables_n + logBNC,1178.2,A
-m_RT ~  country +  Letters_n + Syllables_n + logUKWAC,1178.74,B
-m_RT ~  country +  Letters_n + Syllables_n + logBBC,1182.06,B
-m_RT ~  country +  Letters_n + Syllables_n + logBNC,1179.41,B

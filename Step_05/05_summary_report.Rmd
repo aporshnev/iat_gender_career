@@ -1,0 +1,375 @@
+---
+title: 'LDM: IAT Gender&Career Project Figures and Tables'
+author: "Alexander Porshnev"
+date: "2024-10-29"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+library(data.table)
+library(dplyr)
+library(knitr)
+library(ggplot2)
+library(cowplot)
+library(stringr)
+
+knitr::opts_chunk$set(echo = FALSE, asis = TRUE)
+setwd("..")
+path<-getwd()
+#setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/Jul24_stage4/")
+```
+
+```{r additional function}
+table_out <- function(d, c_text, transform = 1){
+  if (transform == 1){
+    kable(table(d), col.names = NULL, caption = c_text)}
+  else{
+    kable(d, col.names = NULL, caption = c_text)}
+}
+
+getBIC <- function (df_BIC, corpora_name, sample_name ){
+  res<-unname(d_BIC %>% filter(corpora == corpora_name, sample == sample_name) %>% select(BIC))
+  return(res[[1]])
+}
+```
+
+
+
+```{r Reading&Transforming data from modelling output}
+#Reading data from modelling output for sample A&B
+model_type="classic"
+dA<- fread(paste0(path,"/Step_04/out_4_Summary_classic/Summary_table_A_llms_", model_type,".csv"))
+#View(dA)
+dA$ext_model<-paste0(dA$lmd, dA$baseline)
+
+dB<- fread(paste0(path,"/Step_04/out_4_Summary_classic/Summary_table_B_llms_", model_type,".csv"))
+dB$ext_model<-paste0(dB$lmd, dB$baseline)
+
+dR<- left_join(dA, dB, by = join_by("ext_model" == "ext_model"), suffix = c("_A", "_B"))
+
+#Tranforming data to simplify report process
+dR$corpora<-NA
+dR$corpora[grep("logUKWAC",dR$baseline_A)]<-"ukwac"
+dR$corpora[grep("logSUBTITLES",dR$baseline_A)]<-"subtitles"
+dR$corpora[grep("logBNC",dR$baseline_A)]<-"bnc"
+
+dR$measure<-NA
+dR$measure[grep("ngram",dR$lmd_A)]<-"-"
+dR$measure[grep("cos_",dR$lmd_A)]<-"cos"
+dR$measure[grep("euc_",dR$lmd_A)]<-"euc"
+dR$measure[grep("cor_",dR$lmd_A)]<-"cor"
+
+dR$stimuli<-"lowercase"
+dR$stimuli[grep("pairs_names_Upper",dR$lmd_A)]<-"capitalized"
+
+
+llms<-c("_llama_2_13b_Q8_0",                "_llama_2_70b_Q5_0",               
+  "_llama_2_7b_Q8_0",                 "_llama_30b_Q8_0",                 
+ "_llama_65b_Q5_0",                  "_llama_7b_Q8_0",                  
+ "_Meta_Llama_3_1_70B_Q5_K_M",      "_meta_llama_3_1_8b_q8_0" ,        
+  "_mistral_7b_v0_1_Q8_0",            "_Mistral_7B_v0_3_Q8_0" ,          
+ "_dolphin_2_8_mistral_7b_v02_Q8_0", "_Hermes_3_Llama_3_1_70B_Q5_K_M" )
+
+classic<- c("_cbow",
+"_skipgram",
+"_probability_ratios_None",
+"_log_cooccurrence_None",
+"_pmi_None",
+"_ppmi_None",
+"_conditional_probability_ngram",
+"_conditional_probability_None",
+"_log_ngram_freq",
+"_ppmi_ngram",
+"_probability_ratio_ngram",
+"_pmi_ngram",
+"_glove_6B_300d",
+"_log_ngram")
+
+mdls<-c(llms, classic)
+            
+
+mdls_s<-sub('.', '', mdls)
+dR$model<-NA
+i<-1
+for (i in 1:length(mdls)){
+  dR$model[grep(mdls[i],dR$lmd_A)]<-mdls_s[i]
+}
+table_out(!is.na(dR$model), "Model check")
+table_out(dR$model, "Models")
+
+rds<-c("_r1",
+        "_r10",
+        "_r5",
+        "_r3")
+
+rds_s<-c("r_01",
+              "r_10",
+              "r_05",
+              "r_03")
+
+dR$window_radius<-"-"
+for (i in 1:length(rds)){
+  dR$window_radius[grep(rds[i],dR$lmd_A)]<-rds_s[i]
+}
+
+dR$window_radius[grep("_glove_6B_300d",dR$lmd_A)]<-"r_global"
+
+
+for (i in 1:length(llms)){
+  dR$window_radius[grep(llms[i],dR$lmd_A)]<-"r_4096"
+}
+
+table_out(dR$window_radius, "Window radius")
+
+dR$embedding_size<-"None"
+embs<-c("_50",
+       "_100",
+       "_200",
+       "_300",
+       "_500")
+embs_s<-sub('.', '', embs)
+
+for (i in 1:length(embs_s)){
+  dR$embedding_size[grep(embs_s[i],dR$lmd_A)]<-embs_s[i]
+}
+
+dR$embedding_size[grep("_glove_6B_300d",dR$lmd_A)]<-"300"
+#dR$embedding_size[grep("_llama_2_7b_chat_Q4_K_M",dR$lmd_A)]<-"4096"
+#dR$embedding_size[grep("_mistral_7b_v0_1_Q4_K_M",dR$lmd_A)]<-"4096"
+#dR$embedding_size[grep("_llama_2_13b_chat_Q5_K_S",dR$lmd_A)]<-"5120"
+
+table_out(dR$embedding_size, "Embedding size")
+llm_list<-cbind(llms, rep("llm",length(llms)))
+
+t_mdls<-rbind(c("_cbow","predict"),
+          c("_skipgram","predict"),
+          llm_list,
+          c("_probability_ratios_None","count"),
+          c("_log_cooccurrence_None","count"),
+          c("_pmi_None","count"),
+          c("_ppmi_None","count"),
+          c("_conditional_probability_None","count"),
+          c("_conditional_probability_ngram","ngram"),
+          c("_log_ngram","ngram"),
+          c("_ppmi_ngram","ngram"),
+          c("_probability_ratio_ngram","ngram"),
+          c("_pmi_ngram","ngram"),
+          c("_glove_6B_300d","count")
+                    )
+t_mdls<-as.data.frame(t_mdls)
+name<-sub('.', '', t_mdls$llms)
+t_mdls$name<-name
+
+dR$family<-NA
+for (i in 1:length(t_mdls$name)){
+  dR$family[grep(t_mdls[i,1],dR$lmd_A)]<-t_mdls[i,2]
+}
+table(dR$family, dR$model) 
+```
+
+```{r adding BIC }
+
+# BIC baseline calculated in previous steps
+d_BIC<-read.csv(paste0(path,"/Step_03/out_3_EXT_RT/BIC_", model_type, ".csv"))
+d_BIC$corpora<-NA
+d_BIC$corpora[grep("logUKWAC", d_BIC$model)] <-"ukwac"
+d_BIC$corpora[grep("logBNC", d_BIC$model)] <-"bnc"
+d_BIC$corpora[grep("logBBC", d_BIC$model)] <-"subtitles"
+
+dR$base_BIC_A<-NA
+
+dR$base_BIC_A[dR$corpora == "bnc"]<-  getBIC(d_BIC, "bnc", "A") #1178.2
+s<-getBIC(d_BIC, "bnc", "A")
+s[[1]]
+dR$base_BIC_A[dR$corpora == "subtitles"]<- getBIC(d_BIC, "subtitles", "A") #1180.82
+dR$base_BIC_A[dR$corpora == "ukwac"]<-getBIC(d_BIC, "ukwac", "A") #1177.56
+
+dR$base_BIC_B<-NA
+dR$base_BIC_B[dR$corpora == "bnc"]<-getBIC(d_BIC, "bnc", "B") #1179.41
+dR$base_BIC_B[dR$corpora == "subtitles"]<-getBIC(d_BIC, "subtitles", "B") #1182.06
+dR$base_BIC_B[dR$corpora == "ukwac"]<-getBIC(d_BIC, "ukwac", "B") #1178.74
+```
+
+
+#### Creating summary tables for conditions
+##### C1_corr_dir: direction of correlations between LDM and m_RT is similar at the both samples A and B
+##### C0_bAB: sign of estimate for LDM in regression model for m_RT is similar at the both samples A and B: direction of correlations between LDM and m_RT is similar at the both samples A and B
+##### C2_B_inCI: Correlation between LDM and m_RT on sample B is in C.I. obtained from sample A
+##### C3_AB_pvalue: p-values for estimate for LDM in regression model for m_RT are less than 0.05 on the both samples
+##### C1C2C3: C1_corr_dir AND C2_B_inCI AND C3_AB_pvalue
+##### C4_dBIC_AB: decrease of BIC in comparison LDM regression model and baseline is more than 3 for at the both samples
+##### C1C2C3C4: C1_corr_dir AND C2_B_inCI AND C3_AB_pvalue AND C4_dBIC_AB
+
+```{r Conditions}
+
+t<-table(dR$family)
+
+
+dR$C1_corr_dir<- (dR$corLDMmRT_A*dR$corLDMmRT_B)>0
+dR$C0_bAB<- (dR$coef_A*dR$coef_B)>0
+
+dR$C2_B_inCI <-(dR$corLDMmRT_B<dR$corLDMmRT_CI_upper_A)&(dR$corLDMmRT_B>dR$corLDMmRT_CI_lower_A)
+
+dR$C1C2<-dR$C1_corr_dir&dR$C2_B_inCI
+
+dR$C3_AB_pvalue<-(dR$p_value_A<0.05)&(dR$p_value_B<0.05)
+
+dR$C1C2C3<-dR$C1_corr_dir&dR$C2_B_inCI&dR$C3_AB_pvalue
+
+dR$C4_dBIC_AB <-((-dR$BIC_A + dR$base_BIC_A)>3)&((-dR$BIC_B + dR$base_BIC_B)>3)
+
+dR$C1C2C3C4<-dR$C1_corr_dir & dR$C2_B_inCI & dR$C3_AB_pvalue & dR$C4_dBIC_AB
+
+
+r<-dR %>% group_by(family, model) %>% summarise(n= n(), 
+                                                C0_bAB = sum(C0_bAB),
+                                                C0_bABpc = sum(C0_bAB)/n()*100,
+                                                C1 = sum(C1_corr_dir),
+                                                C1pc = sum(C1_corr_dir)/n()*100,
+                                                C2 = sum(C2_B_inCI),
+                                                C2pc = sum(C2_B_inCI)/n()*100,
+                                                C3 = sum(C3_AB_pvalue),
+                                                C3pc = sum(C3_AB_pvalue)/n()*100,
+                                                C4 = sum(C4_dBIC_AB),
+                                                C4pc = sum(C4_dBIC_AB)/n()*100,
+                                                C3C4 = sum(C4_dBIC_AB&C3_AB_pvalue),
+                                                                             
+                                                C3C4pc = sum(C4_dBIC_AB&C3_AB_pvalue)/n()*100,
+                                                allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue),
+                                                allCpc = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue)/n()*100, .groups = 'drop')
+
+table_out(table(dR$C0_bAB, dR$C3_AB_pvalue), "Condition 0 x Condition C3")
+table_out(table(dR$C0_bAB, dR$C4_dBIC_AB), "Condition 0 x Condition C4")
+
+table_out(table(dR$C3_AB_pvalue, dR$C4_dBIC_AB), "Condition 3 x Condition C4")
+
+
+t<-dR %>% group_by(family) %>% summarise(n= n(), 
+                                                C1 = sum(C1_corr_dir),
+                                                C1pc = sum(C1_corr_dir)/n()*100,
+                                                C2 = sum(C2_B_inCI),
+                                                C2pc = sum(C2_B_inCI)/n()*100,
+                                                C3 = sum(C3_AB_pvalue),
+                                                C3pc = sum(C3_AB_pvalue)/n()*100,
+                                                C4 = sum(C4_dBIC_AB),
+                                                C4pc = sum(C4_dBIC_AB)/n()*100,
+                                                C3C4 = sum(C4_dBIC_AB&C3_AB_pvalue),
+                                                C3C4pc = sum(C4_dBIC_AB&C3_AB_pvalue)/n()*100,
+                                         allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue),
+                                                allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue)/n()*100, .groups = 'drop')
+
+fwrite(t, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\T3_", model_type, ".csv"))
+fwrite(r, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\T2_", model_type, ".csv"))
+fwrite(dR, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\AB_Summary", model_type, ".csv"))
+
+table_out(dR$family, "Family")
+
+table_out(table(dR$family, dR$C1_corr_dir), "Family & Condition C1", 0)
+
+table_out(table(dR$family, dR$C3_AB_pvalue), "Family & Condition C1", 0)
+
+table_out(table(dR$family, dR$C1C2C3C4), "Family & Condition C1&C2&C3&C4", 0)
+```
+
+```{r Figures and Tables}
+#Creating Figures for BIC and correlations
+
+dR<-dR[!is.na(dR$family),]
+
+dR$dBICA<-dR$base_BIC_A - dR$BIC_A
+
+p <- ggplot(dR, aes(x=family, y=dBICA, color = family)) + 
+  geom_violin(trim=FALSE)+
+  xlab("") + ylab("BIC change") +
+    geom_jitter(shape=16, position=position_jitter(0.3))+
+  scale_fill_brewer(palette="RdBu") + 
+  theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
+  theme(axis.text.x = element_text(size = rel(1.3), angle = 0))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"))
+p<-p + guides(colour="none")
+p
+w_img=2000
+h_img=2000
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_3", model_type,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+
+tmp<-dR %>% filter(measure == "-") %>% select(model)
+dR10 <-  dR %>% filter(measure!="cor") %>%
+  arrange(dBICA) %>%
+  group_by(family) %>%
+  top_n(10)
+
+p1 <- ggplot(dR10, aes(x=family, y=dBICA, color = family)) + 
+  geom_violin(trim=FALSE)+
+  xlab("") + ylab("BIC change") +
+  geom_jitter(shape=16, position=position_jitter(0.3))+
+  scale_fill_brewer(palette="RdBu") + 
+theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
+  theme(axis.text.x = element_text(size = rel(1.3), angle = 0))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"))
+p1<-p1 + guides(colour="none")
+p1
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_4_with_out_cor", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
+
+dR$absCor<-abs(dR$corLDMmRT_A)
+
+c <- ggplot(dR, aes(x=family, y=absCor, color = family)) + 
+  geom_violin(trim=FALSE)+
+  geom_jitter(shape=16, position=position_jitter(0.3))+
+  xlab("") + ylab("Absolute Correlation") +
+  scale_fill_brewer(palette="RdBu") +
+ theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
+  theme(axis.text.x = element_text(size = rel(1.3), angle = 0))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"))
+
+c<-c + guides(colour="none")
+
+c
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/fig_1_Cor", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
+cR10 <-  dR%>% filter(measure!="cor") %>%select(model, family, absCor) %>% unique() %>%
+  arrange(absCor) %>%
+  group_by(family) %>%
+  top_n(10)
+
+cR10[order(cR10$absCor, decreasing = TRUE),]
+
+c1 <- ggplot(cR10, aes(x=family, y=absCor, color = family)) + 
+  geom_violin(trim=FALSE)+
+  geom_jitter(shape=16, position=position_jitter(0.3))+
+#  xlab("Model family")
+  xlab("") +
+  ylab("Absolute Correlation") +
+  scale_fill_brewer(palette="RdBu") + 
+  theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
+  theme(axis.text.x = element_text(size = rel(1.3), angle = 0))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"))
+c1<-c1 + guides(colour="none")
+c1
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/fig_2_Cor_top_without_cor_", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
+c<-c + guides(colour="none")
+
+
+
+
+plot_grid(c,c1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/Correlations_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+
+plot_grid(p,p1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+
+plot_grid(c,c1,p,p1, align = "hv", ncol = 2, rel_heights = c(1/2, 1/2), labels = c("a", "b", "c","d"))
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/COR_BIC_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+```
+
+
