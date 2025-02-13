@@ -18,8 +18,7 @@ library(data.table)
 ## User id analysis by year
 
 ```{r preprocessing 1a}
-#year<-2005
-#setwd("D:\\Jul24_stage4")
+
 stats<-NULL
 for(year in 2005:2021)
 {
