@@ -97,8 +97,8 @@ describe_clean_data_RT<-function(year){
 
   for(sample_name in c("A","B"))
   {
-    p_filenameSN = paste0(path, "/in_1b_Split/p_",year, "_",sample_name,".csv")
-  t_filenameSN = paste0(path, "/in_1b_Split/t_",year, "_",sample_name,".csv")
+    p_filenameSN = paste0(path, "/Step_01/out_1b_Split/p_",year, "_",sample_name,".csv")
+  t_filenameSN = paste0(path, "/Step_01/out_1b_Split/t_",year, "_",sample_name,".csv")
   p_data_SN <- fread(p_filenameSN, colClasses=c("session_id" = "character"))
   t_data_SN <- fread(t_filenameSN, colClasses=c("session_id" = "character"))
   
@@ -116,7 +116,7 @@ describe_clean_data_RT<-function(year){
   table_RT_out<-rbind(RT_UK, RT_US)
   
   table_RT_out$trial_name<-tolower(table_RT_out$trial_name)
-  fwrite(table_RT_out, file = paste0(path,"/out_2_RT/RT_", year, "_", sample_name,".csv"))
+  fwrite(table_RT_out, file = paste0(path,"/Step_02/out_2_RT/RT_", year, "_", sample_name,".csv"))
 }
 
 }
@@ -128,6 +128,7 @@ describe_clean_data_RT<-function(year){
 
 ```{r main, echo = FALSE, results = 'asis', warning = FALSE}
 md.log("Start", file="log.txt", append =FALSE, time = TRUE)
+setwd('..')
 path = getwd()
 
 for (i in 2005:2021){

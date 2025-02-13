@@ -1,5 +1,3 @@
-Step 5.
-Adding LDM feature to baseline model and running regression analysis
-Requirements
-Distances in format
-Extended reacion time that includes control variables: frequencies in corpora, ...
+Step 6. Figures and tables 
+
+06_summary_report.RmD generates html version of report + two Figures 

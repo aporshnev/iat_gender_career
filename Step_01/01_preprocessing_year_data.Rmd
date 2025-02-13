@@ -112,8 +112,9 @@ t_prev_year_check<-NULL
 preprocess<-function(year, t_prev_year_check){
 stats<-NULL
 stats<-cbind(stats, year = year)
-
-init_dir <-"C:\\Alex\\Maynooth\\IAT\\Gender-Career\\source_Datasets" # "../../source_Datasets" 
+setwd("..")
+path<-getwd()
+init_dir <-paste0(path, "/in_RAW_IAT_data") # "../../source_Datasets" 
 p_data_files<- paste0(init_dir, "/Gender-Career IAT.public.", year, "-CSV/Gender-Career IAT.public.", year, ".csv") 
 
 p_data <- fread(p_data_files, header = TRUE, sep =",", colClasses=c("session_id" = "character")) # participant level data
