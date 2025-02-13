@@ -8,3 +8,4 @@
 log.txt
 **/*.csv
 **/**/*.csv
+in_RAW_IAT_data/*.*
