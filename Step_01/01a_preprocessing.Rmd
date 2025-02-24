@@ -40,7 +40,7 @@ for(year in 2005:2021)
 
   fwrite(t_clean_no_experience, file= paste0("out_1a_Clean_noexp/t_", year, ".csv"))
   fwrite(p_clean_no_experience, file= paste0("out_1a_Clean_noexp/p_", year, ".csv"))
-  fwrite(stats, file= paste0("out_1a_Clean_noexp/stats_", year, ".csv"))
+  fwrite(stats, file= paste0("out_1a_Stats/stats_", year, ".csv"))
 }
 
 ```

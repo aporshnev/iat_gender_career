@@ -1,12 +1,27 @@
+---
+title: "1b Split Data"
+author: "Alexander Porshnev"
+date: "2025-02-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(md.log)
 library(data.table)
 library(dplyr)
+```
+
+
 #Module to split main data set into two subsets A and B balanced by country / year
 #!!!
 #Be careful this function overwrite the A and B samples!!!
 #!!!
 
+```{r functions}
 split_clean_data_RT<-function(year){
-  path<-getwd()
+  #path<-getwd()
   t_filename = paste0(path, "/Step_01/out_1a_Clean_noexp/t_", year, ".csv")
   t_data_d <- fread(t_filename)
   
@@ -43,8 +58,10 @@ split_clean_data_RT<-function(year){
   fwrite(p_data_B, p_filenameB)
   fwrite(t_data_B, t_filenameB)
 }
+```
 
-library(md.log)
+
+```{r main}
 md.log("Start splitting data", file="log_splitting.txt", append =FALSE, time = TRUE)
 
 for (i in 2005:2021)
@@ -53,4 +70,3 @@ for (i in 2005:2021)
   split_clean_data_RT(i)
   md.log(paste0(" year completed"))
 }
-

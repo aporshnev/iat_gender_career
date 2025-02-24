@@ -112,8 +112,8 @@ t_prev_year_check<-NULL
 preprocess<-function(year, t_prev_year_check){
 stats<-NULL
 stats<-cbind(stats, year = year)
-setwd("..")
-path<-getwd()
+#setwd("..")
+#path<-getwd()
 init_dir <-paste0(path, "/in_RAW_IAT_data") # "../../source_Datasets" 
 p_data_files<- paste0(init_dir, "/Gender-Career IAT.public.", year, "-CSV/Gender-Career IAT.public.", year, ".csv") 
 
@@ -136,7 +136,7 @@ if (!is.null(t_prev_year_check)) {
   cat(paste0("\n Found in previous year = ", length(unique(data_from_year$session_id))))
   stats<-cbind(stats, add_from_prev_year = length(unique(data_from_year$session_id)))
 } else {
-  try(t_prev_year_check<-fread(file= paste0("TMP/t_prev", year-1, ".csv"), colClasses=c("session_id" = "character")))
+  try(t_prev_year_check<-fread(file= paste0("/Step_01/out_1_Stats/t_prev", year-1, ".csv"), colClasses=c("session_id" = "character")))
  
    if (!is.null(t_prev_year_check)) {
   data_from_year<-t_prev_year_check %>% filter(session_id %in% jan_01_data$session_id) 
@@ -340,17 +340,17 @@ t_clean <- t_data %>% filter (!any_error)
 p_clean_ids<- p_clean$session_id
 t_clean <- t_clean %>% filter(session_id %in% p_clean_ids)
 
-fwrite(t_clean, file= paste0("out_Clean/t_", year, ".csv"))
-fwrite(p_clean, file= paste0("out_Clean/p_", year, ".csv"))
-fwrite(stats, file= paste0("out_Clean/stats_", year, ".csv"))
-fwrite(t_prev_year_check, file= paste0("TMP/t_prev", year, ".csv"))
+fwrite(t_clean, file= paste0(path, "/Step_01/out_1_Clean/t_", year, ".csv"))
+fwrite(p_clean, file= paste0(path, "/Step_01/out_1_Clean/p_", year, ".csv"))
+fwrite(stats, file= paste0(path, "/Step_01/out_1_Stats/stats_", year, ".csv"))
+fwrite(t_prev_year_check, file= paste0(path, "/Step_01/out_1_Stats/t_prev", year, ".csv"))
 prev_stats<-NULL
 
-try(prev_stats<-fread(file= paste0("TMP/res_stats_", year-1, ".csv")))
+try(prev_stats<-fread(file= paste0(path, "/Step_01/out_1_Stats/res_stats_", year-1, ".csv")))
 if (!is.null(prev_stats)) {
   stats <- rbind(prev_stats, stats)
 }
-fwrite(stats, file= paste0("TMP/res_stats_", year, ".csv"))
+fwrite(stats, file= paste0(path, "/Step_01/out_1_Stats/res_stats_", year, ".csv"))
 gc()
 return (t_prev_year_check)
 }
