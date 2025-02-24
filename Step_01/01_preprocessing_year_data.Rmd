@@ -1,0 +1,374 @@
+---
+title: "Step 01. Cleaning_raw_data"
+author: "Alexander Porshnev"
+date: "2023-10-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# Main data preprocessing
+
+knitr::opts_chunk$set(echo = FALSE, results = 'asis', warning = FALSE)
+library(dplyr)
+library(knitr)
+library(psych)
+library(md.log)
+library(data.table)
+library(tidyr)
+```
+
+```{r d-OLD-calculations, results='asis'}
+d_calculations_old<- function(block1, block2, p_data, t_data){
+
+res1 <- t_data %>% filter(block_number %in% block1) %>% group_by(session_id) %>% summarize(M_block1 = mean(trial_latency), )
+res2 <- t_data %>% filter(block_number %in% block2) %>% group_by(session_id) %>% summarize(M_block2 = mean(trial_latency), )
+res12sd <- t_data %>% filter(block_number %in% c(block1, block2)) %>% group_by(session_id) %>% summarize(sd12 = sd(trial_latency))
+
+by = join_by(session_id)
+check_data<-left_join(res1, res2, by)
+check_data<-left_join(check_data, res12sd, by)
+check_data$D<-(check_data$M_block1-check_data$M_block2)/(check_data$sd12)
+p_data$order_sign<- ifelse(p_data$Order==2,1,-1)
+
+check_data_res<-left_join(p_data[,c("session_id", "order_sign" )], check_data[,c("D", "session_id")], by)
+check_data_res$D<-check_data_res$D*check_data_res$order_sign
+
+return (check_data_res[,c(1,3)])
+}
+```
+
+```{r d-OLD-mean calculations, results='asis'}
+d_mean_old<-function(year, p_data, t_data){
+    if (as.numeric(year)>2015){
+       d1 <- d_calculations_old(c(3), c(6), p_data, t_data)
+       d2 <- d_calculations_old(c(4), c(7), p_data, t_data)
+    }
+    else{
+       d1 <- d_calculations_old(c(2), c(5), p_data, t_data)
+       d2 <- d_calculations_old(c(3), c(6), p_data, t_data) 
+  }
+  
+  check_data_res<-left_join(d1, d2, by = "session_id")
+  check_data_res$D_mean<-(check_data_res$D.x+check_data_res$D.y)/2
+  
+  return (check_data_res[,c(1,4)])
+}
+```
+
+
+
+```{r function for D calculations}
+calc_D_block<-function(block, p_data, t_data){
+
+md.log(paste0(block, collapse = "\n"))
+
+female <- c("Rebecca", "Michelle", "Emily", "Julia", "Anna")
+male <- c("Ben", "Paul", "Daniel", "John", "Jeffrey")
+career<-c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business")
+family<-c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children")
+responces <- c("Female/Career", "Female/Family", "Male/Career", "Male/Family", "Career/Male,Family/Female", "Family/Male,Career/Female")
+md.log(paste0(names(t_data), sep="", collapse = "\n"))
+
+
+table_c <- t_data %>% filter(block_IAT %in% block) %>% filter (trial_name  %in% c(female, male, career, family) & trial_def_IAT %in% responces ) 
+
+table_c$group <- ((table_c$trial_response %in% c("Female/Family") & (table_c$trial_name %in% c(family, female) ))|
+      (table_c$trial_def_IAT %in% c("Male/Career", "Career/Male,Family/Female") & (table_c$trial_name %in% c(career, male))))
+
+
+table_SD <- table_c %>% group_by(session_id) %>% summarise(SD = SD(trial_latency), .groups = "keep") 
+table_M <- table_c %>% group_by(session_id, group) %>%  summarise(M = mean(trial_latency), .groups = "keep") 
+
+M_wide <- table_M %>% pivot_wider(names_from = c("group"), values_from =M)
+D_wide<-left_join(M_wide, table_SD, join_by("session_id"))
+names(D_wide)<-names(D_wide)<-c("session_id", "M_incongruent", "M_congruent", "SD")
+
+D_wide$D<-(D_wide$M_incongruent-D_wide$M_congruent)/D_wide$SD
+return (D_wide)
+}
+```
+
+```{r d mean calculations, results='asis'}
+d_mean_calc<- function(p_data, t_data){
+
+D_wide1<-NULL
+check_d  <-NULL
+D_wide1 <- calc_D_block(c(3,6), p_data, t_data) %>% select(c("session_id", "D"))
+D_wide2 <- calc_D_block(c(4,7), p_data, t_data) %>% select(c("session_id", "D"))
+check_d <- left_join(D_wide1, D_wide2, join_by("session_id"))
+check_d$D<-(check_d$D.x+check_d$D.y)/2
+
+p_check<-left_join(p_data, check_d, join_by("session_id"))
+print(kable(head(p_check[,c("D", "D_biep.Male_Career_all", "D.x", "D_biep.Male_Career_36", "D.y", "D_biep.Male_Career_47")]), caption = "D from raw data and preprocessed from ocf storage"))
+
+return (p_check[,c("session_id", "D")])
+}
+```
+
+```{r}
+year<-2005
+t_prev_year_check<-NULL
+
+preprocess<-function(year, t_prev_year_check){
+stats<-NULL
+stats<-cbind(stats, year = year)
+setwd("..")
+path<-getwd()
+init_dir <-paste0(path, "/in_RAW_IAT_data") # "../../source_Datasets" 
+p_data_files<- paste0(init_dir, "/Gender-Career IAT.public.", year, "-CSV/Gender-Career IAT.public.", year, ".csv") 
+
+p_data <- fread(p_data_files, header = TRUE, sep =",", colClasses=c("session_id" = "character")) # participant level data
+
+stats<-cbind(stats, total = length(unique(p_data$session_id)))
+
+
+raw_data_dir<-paste0("C:\\Alex\\Maynooth\\IAT\\Gender-Career\\source_Datasets\\GenderCareer_iat_", year)
+data_files<-list.files(raw_data_dir)
+data_files<-data_files[grep("*.txt$",data_files)]
+data_files<-paste0(raw_data_dir,"/", data_files)
+
+jan_01_data<- p_data %>% filter(month==1 & day == 1)
+
+
+#md.log(years_to_load[year])
+if (!is.null(t_prev_year_check)) {
+  data_from_year<-t_prev_year_check %>% filter(session_id %in% jan_01_data$session_id) 
+  cat(paste0("\n Found in previous year = ", length(unique(data_from_year$session_id))))
+  stats<-cbind(stats, add_from_prev_year = length(unique(data_from_year$session_id)))
+} else {
+  try(t_prev_year_check<-fread(file= paste0("TMP/t_prev", year-1, ".csv"), colClasses=c("session_id" = "character")))
+ 
+   if (!is.null(t_prev_year_check)) {
+  data_from_year<-t_prev_year_check %>% filter(session_id %in% jan_01_data$session_id) 
+  cat(paste0("\n Found in previous year = ", length(unique(data_from_year$session_id))))
+  stats<-cbind(stats, add_from_prev_year = length(unique(data_from_year$session_id)))
+   }
+  else{
+ data_from_year<-NULL
+ stats<-cbind(stats, add_from_prev_year = 0)
+ cat("\n No data from previous year found")
+  }
+}
+
+for (j in data_files){
+    d<-fread(j, header = TRUE, sep = "\t", colClasses=c("session_id" = "character"))
+    data_from_year<-rbind(data_from_year, d)    
+  }
+
+t_data<-data_from_year # trial level data
+
+t_data_no_dpl <- t_data %>% distinct(trial_number, trial_name, trial_latency, session_id, block_number, .keep_all = TRUE) 
+
+cat(paste0("\n# ", year, "\n"))
+
+cat(paste0("\n In trial dataset from:", year, " = ", nrow(t_data), " after removing trial duplicates we keep = ", nrow(t_data_no_dpl),"\n"))
+
+t_data<-t_data_no_dpl
+
+rm(t_data_no_dpl)
+rm(d)
+rm(data_from_year)
+
+t_prev_year_check<-t_data%>% filter(!(session_id %in% p_data$session_id))
+
+
+t_data$trial_error<-ifelse(t_data$trial_error==0,0,1) # recode all values not equal to 0 (like null in)
+
+#table(t_data$trial_error)
+# [TBD] load previous year, rearrange trial data, normalize and unify all variables
+
+#continue with 2005 as is
+
+
+
+
+#Preregistred procedure
+#We will include only participants from countries US, UK (citizens and residents of UK and US), reflecting the English language corpora used to generate the linguistic distributional models where UKWAC, BBC and BNC corpora has been collected, participants who are 18 or older, who participated in the common version of IAT (without additional stimuli), without prior experience with IAT tasks (Cochrane et al., 2023; Rohner et al., 2011), for whom raw trial data is available and where the calculated bias effect size D was found to be equal to the effect size in preprocessed dataset (to avoid discrepancies between raw and preprocessed data). We will exclude participants with experience in IAT studies.
+
+
+
+  t_data$block_IAT <- t_data$block_number+1 #difference in numeration of blocks from 2005-2015, and >2016
+  t_data$trial_def_IAT <- t_data$trial_response #
+  t_data$trial_name<-sub("[|]","", t_data$trial_name) #problem with names of stimuli with added |
+  #test_p<- p_data %>% filter (countryres_num %in% c(1,225))
+  #test_p1<- test_p %>% filter (!is.na(D_biep.Male_Career_all))
+  #test_p2<- test_p1 %>% filter (birthyear<1999)
+  #table(test_p1$birthyear)
+  #table(test_p$countryres, test_p$countryres_num)
+ 
+  if (as.numeric(year)>2015){
+    t_data$trial_def_IAT <- t_data$block_pairing_definition
+    t_data$block_IAT <- t_data$block_number #difference in numeration of blocks from 2005-2015, and >2016
+    if (year == 2016){ # in 2016 countryres contain string and numeric values, e.g. 1 and US for USA
+      p_data$countryres_num[p_data$countryres==1 | p_data$countryres=="US"]<-1
+      p_data$countryres_num[p_data$countryres==225 | p_data$countryres=="UK"]<-225
+      p_data$countrycit_num[p_data$countrycit==1 | p_data$countrycit=="US"]<-1
+      p_data$countrycit_num[p_data$countrycit==225 | p_data$countrycit=="UK"]<-225
+      #p_data$countryres_num[is.na(p_data$countryres_num) & p_data$countryres=="US"]<-1
+      #p_data$countryres_num[is.na(p_data$countryres_num) & p_data$countryres=="UK"]<-225
+      #p_data$countrycit_num[is.na(p_data$countrycit_num) & p_data$countrycit=="US"]<-1
+      #p_data$countrycit_num[is.na(p_data$countrycit_num) & p_data$countrycit=="UK"]<-225      
+    }
+    p_data$countryres<-NA #since 2017 there is no countryres variable,only countryres_num
+    p_data$countryres[p_data$countryres_num==1] <- "US"
+    p_data$countryres[p_data$countryres_num==225] <- "UK"
+    p_data$countrycit<-NA #since 2017 there is no countrycit variable,only countrycit_num
+    p_data$countrycit[p_data$countrycit_num==1] <- "US"
+    p_data$countrycit[p_data$countrycit_num==225] <- "UK"
+    
+    if (as.numeric(year)>2017){
+      p_data$sex<-NA #we should think about different option for other people
+      p_data$sex[p_data$birthSex==1]<-"m"
+      p_data$sex[p_data$birthSex==2]<-"f"
+    }
+    else{
+      p_data$sex<-NA #we should think about different option for other people
+      p_data$sex[p_data$birthsex==1]<-"m"
+      p_data$sex[p_data$birthsex==2]<-"f"    
+    }
+    
+    p_data$birth_sex <- p_data$sex #new invariant variable added
+    p_data$age <- as.numeric(year)-p_data$birthyear #new invariant variable added
+    }
+
+  p_clean <- p_data %>% filter((countryres=="US" | countryres=="UK" ) #US,UK
+                               & (countryres== countrycit) #Check for variable after 2016
+                               & !is.na(D_biep.Male_Career_all)# D in preprocessed file no NA
+                               #No prior experience with IAT tasks #[TBD add p_clean$previous_session_id, p_clean$user_id
+                               & age>17) #age>17
+  
+  stats<-cbind(stats, UKUS_18 = length(unique(p_clean$session_id)))
+  
+#trial level checks
+#[TBD] no additional stimuli 
+#D from raw data calculations equal D in pre-processed data
+  
+  t_clean<- t_data %>% filter(session_id %in% p_clean$session_id)
+  
+  d_m <- d_mean_old(year, p_clean, t_clean)
+    #d_mean_calc(p_clean, t_data)
+  names(d_m)<-c("session_id","D") 
+  d_check<-left_join(p_clean[,c("session_id", "D_biep.Male_Career_all", "countryres")], d_m, by = "session_id")
+  
+   clean_ids<- d_check$session_id[(d_check$D_biep.Male_Career_all-d_check$D)<0.001 & !is.na(d_check$D)]
+  
+  print(paste0("\n UK and US, under 17 dataset length = ", nrow(p_clean), " and have D score reproducable for ", length(clean_ids)))
+  
+  p_clean <- p_clean%>%filter(session_id %in% clean_ids)
+
+  stats<-cbind(stats, D_check = length(unique(p_clean$session_id)))
+#!!!old place
+  t_data<-t_clean
+  
+
+
+#We will exclude individual trials as outliers if they: 
+
+#- Have a mean RT more than 3SDs away from the overall mean per participant per condition 
+
+#- Are <200ms (normally the result of motor error) 
+
+#- Trials with errors (participant makes a mistake in choosing category) 
+
+
+
+#Motor error
+t_data$quick_trial<- t_data$trial_latency < 200
+
+t_data <- t_data %>% mutate(trial_ID = row_number())
+
+t_data_block23 <- t_data %>% filter(block_IAT %in%c(3,6))%>% group_by(session_id) %>% summarise(M1 = mean(trial_latency), three_sd1 = 3*sd(trial_latency))
+
+t_data_outlier23 <- t_data %>% filter(block_IAT %in%c(3,6)) %>% select(session_id, trial_latency, trial_ID) %>%  left_join(t_data_block23)
+
+t_data_outlier23$outlier<-(t_data_outlier23$trial_latency<t_data_outlier23$M1-t_data_outlier23$three_sd1 | t_data_outlier23$trial_latency>t_data_outlier23$M1 +t_data_outlier23$three_sd1)
+
+
+outlier_23_IDs <- t_data_outlier23 %>% filter(outlier) %>% select(trial_ID)
+
+t_data_block56 <- t_data %>% filter(block_IAT %in%c(4,7))%>% group_by(session_id) %>% summarise(M2 = mean(trial_latency), three_sd2 = 3*sd(trial_latency))
+
+t_data_outlier56 <- t_data %>% filter(block_IAT %in%c(4,7)) %>% select(session_id, trial_latency, trial_ID) %>%  left_join(t_data_block56)
+
+t_data_outlier56$outlier<-(t_data_outlier56$trial_latency<t_data_outlier56$M1-t_data_outlier56$three_sd1 | t_data_outlier56$trial_latency>t_data_outlier56$M1 +t_data_outlier56$three_sd1)
+
+outlier_56_IDs <- t_data_outlier56 %>% filter(outlier) %>% select(trial_ID)
+
+t_data$RT_outlier <- (t_data$trial_ID %in%  c(outlier_23_IDs$trial_ID, outlier_56_IDs$trial_ID))
+
+#combine 3 types of possible errors all together
+
+t_data$any_error <- t_data$quick_trial | t_data$trial_error | t_data$RT_outlier
+
+#table(t_data$trial_error)
+#table(t_data$RT_outlier)
+#table(t_data$quick_trial)
+
+
+
+
+#We will remove participants who: 
+
+# - Have more than 30% trials error rate per session  
+
+# - Have an overall mean response time 3 standard deviations (SD) greater than the global mean  
+
+
+t_data_err_rate <- t_data %>% group_by(session_id) %>% summarise(err_rate = sum(any_error)/n())
+
+clean_ids<-t_data_err_rate$session_id[t_data_err_rate$err_rate<0.3]
+
+clean_ids<-intersect(p_clean$session_id, clean_ids)
+
+stats<-cbind(stats, remove_Errors = length(unique(clean_ids)))
+
+# responses with errors and too quick responses and outliers
+
+global_RT_mean_sd <- p_clean %>% summarise(GM = mean(Mn_RT_all_3467), three_sd = sd(Mn_RT_all_3467))
+global_RT_mean<-global_RT_mean_sd[1,1]
+global_RT_sd<-global_RT_mean_sd[1,2]
+
+p_clean$outlier<-(p_clean$Mn_RT_all_3467<global_RT_mean - global_RT_sd*3) | (p_clean$Mn_RT_all_346>global_RT_mean + global_RT_sd*3)
+
+p_clean <- p_clean %>% dplyr::filter(session_id %in% clean_ids)
+p_clean <- p_clean %>% filter(outlier == FALSE)
+
+stats<-cbind(stats, remove_Outliers = length(unique(p_clean$session_id)))  
+
+t_clean <- t_data %>% filter (!any_error) 
+
+p_clean_ids<- p_clean$session_id
+t_clean <- t_clean %>% filter(session_id %in% p_clean_ids)
+
+fwrite(t_clean, file= paste0("out_Clean/t_", year, ".csv"))
+fwrite(p_clean, file= paste0("out_Clean/p_", year, ".csv"))
+fwrite(stats, file= paste0("out_Clean/stats_", year, ".csv"))
+fwrite(t_prev_year_check, file= paste0("TMP/t_prev", year, ".csv"))
+prev_stats<-NULL
+
+try(prev_stats<-fread(file= paste0("TMP/res_stats_", year-1, ".csv")))
+if (!is.null(prev_stats)) {
+  stats <- rbind(prev_stats, stats)
+}
+fwrite(stats, file= paste0("TMP/res_stats_", year, ".csv"))
+gc()
+return (t_prev_year_check)
+}
+```
+ 
+ 
+```{r}
+md.log("Start preprocessing", file="log_preprocessing.txt", append =FALSE, time = TRUE, sys.info = FALSE)
+t_prev <- NULL
+i<-2005
+for(i in 2005:2021)
+{
+  md.log("------------")
+  md.log(paste0(i, "year started"))
+  t_prev <- preprocess(i, t_prev)
+  md.log(paste0("year completed"))
+
+}
+```
+ 
+ 

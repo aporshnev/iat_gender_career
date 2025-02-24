@@ -1,0 +1,207 @@
+---
+title: "baseline_report"
+author: "Alexander Porshnev"
+date: "2024-03-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results = 'asis', warning = FALSE)  
+
+library(dplyr)
+library(data.table)
+library(lme4)
+library(flexmix) #for BIC
+library(sjPlot)
+library(knitr)
+library(stringr)
+library(performance)
+```
+
+```{r}
+setwd("..")
+path = getwd()
+
+sample_name = "A"
+samples<-c("A", "B")
+
+
+for(i in 1:2)
+  {
+    sample_name =samples[i]
+    RT_data_name<-paste0(path,"/Step_02/out_2a_RT_merged/RT_2005_2021", "_", sample_name,".csv")
+    RT_data<-fread(RT_data_name)
+    
+    names(RT_data)[3]<-"m_RT"
+    names(RT_data)[1]<-"stimuli"
+
+    head(RT_data)
+
+    frq_data<-fread(paste0(path,"/in_Control/NSyllabus_check.csv"))
+    frq_data$Word<-tolower(frq_data$Word)
+    RT_data<-left_join(RT_data,frq_data, by = join_by("stimuli"== "Word"))
+    head(RT_data)
+    
+    frq_data<-fread(paste0(path,"/in_Control/subtitles_freq.csv"))
+    names(frq_data)[2]<-"BBC_freq"
+    RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
+    
+    
+    frq_data<-fread(paste0(path,"/in_Control/bnc_freq.csv"))
+    names(frq_data)[2]<-"BNC_freq"
+    RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
+    
+    frq_data<-fread(paste0(path,"/in_Control/ukwac_freq.csv"))
+    names(frq_data)[2]<-"UKWAC_freq"
+    RT_data<-left_join(RT_data, frq_data, by = join_by("stimuli"== "Word"))
+    head(RT_data)
+    
+    m_freq<-mean(RT_data$BNC_freq)
+    sd_RT_BNC<-sd(RT_data$BNC_freq)
+    RT_data$BNC_n<-(RT_data$BNC_freq-m_freq)/sd_RT_BNC
+    RT_data$logBNC <- log(RT_data$BNC_freq)
+    
+    m_lttrs<-median(RT_data$Length)
+    RT_data$Letters_n<-RT_data$Length-m_lttrs
+    
+    m_sllbls<-median(RT_data$NSyll)
+    RT_data$Syllables_n<-RT_data$NSyll-m_sllbls
+    
+    m_freq_bbc<-mean(RT_data$BBC_freq)
+    sd_RT_BBC<-sd(RT_data$BBC_freq)
+    RT_data$BBC_n<-(RT_data$BBC_freq-m_freq_bbc)/sd_RT_BBC
+    RT_data$logBBC<-log(RT_data$BBC_freq)
+    
+    m_freq_ukwac<-mean(RT_data$UKWAC_freq)
+    sd_RT_UKWAC<-sd(RT_data$UKWAC_freq)
+    RT_data$UKWAC_n<-(RT_data$UKWAC_freq-m_freq_ukwac)/sd_RT_UKWAC
+    RT_data$logUKWAC<-log(RT_data$UKWAC_freq)
+    
+    kable(t(head(RT_data,1)))
+    
+    female <- tolower(c("Rebecca", "Michelle", "Emily", "Julia", "Anna"))
+    male <- tolower(c("Ben", "Paul", "Daniel", "John", "Jeffrey"))
+    #career<-tolower(c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business"))
+    #family<-tolower(c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children"))
+    
+    #responces <- tolower(c("Female/Career", "Female/Family", "Male/Career", "Male/Family"))
+    
+    #RT_data$congruent<-(RT_data$stimuli_word %in% c(female, family) &  RT_data$trial_response == "female/family") |(RT_data$stimuli_word %in% c(male, career) &  RT_data$trial_response == "male/career")
+    
+    RT_data$category<- RT_data$stimuli %in% c(female, male)
+    
+    
+    cat(paste0("\n", names(RT_data)))
+   RT_out_name<- paste0(path, "/Step_03/out_3_EXT_RT/RT_2005_2021_extended_",sample_name, ".csv")
+    fwrite(RT_data, RT_out_name)
+}
+
+```
+
+```{r}
+
+lm_model<-function(formula, lm = TRUE,  data){
+if (lm == TRUE){
+  r_model<-lm(formula, data)
+}
+else{
+  r_model<-lmer(formula, data,REML = TRUE )  
+  }
+cat(paste0("\n#### Model:   ",formula, "\n"))
+BIC_r_model <- round(BIC(r_model),2)
+cat(paste0("\n#### BIC: ",BIC_r_model, "\n\n\n"))
+# BIC = 1135.806\
+
+tab<-tab_model(r_model)
+cat(tab$page.style)
+cat(tab$page.content)
+return (r_model)
+}
+```
+
+## Correlation check
+
+```{r corr}
+RT_A_name<- paste0(path, "/Step_03/out_3_EXT_RT/RT_2005_2021_extended_A.csv")
+RT_B_name<- paste0(path, "/Step_03/out_3_EXT_RT/RT_2005_2021_extended_B.csv")
+
+RT_dataA <- fread(RT_A_name)
+RT_dataB <- fread(RT_B_name)
+
+print(kable(names(RT_dataA),  col.names = "Variables list"))
+
+print(kable(cor(RT_dataA[,c("m_RT", "BNC_freq","logBNC",  "BBC_freq", "logBBC", "UKWAC_freq", "logUKWAC","Letters_n", "Syllables_n")])))
+#print(kable(cor(RT_dataB[,c("m_RT", "BNC_freq","logBNC",  "BBC_freq", "logBBC", "UKWAC_freq", "logUKWAC","Letters_n", "Syllables_n")])))
+```
+## Testing group variables
+
+### ICC
+```{r function}
+icc_for_model<-function(f, idata)
+{
+  cat(paste0("\n#### Model: ", f,"\n"))
+  r_model <- lme4::lmer(f, idata)
+  tab<-tab_model(r_model)
+  cat(tab$page.style)
+  cat(tab$page.content)
+  print(kable(icc(r_model, by_group = TRUE)))
+}
+```
+
+```{r}
+
+# sometimes lme4 and Matrix create error messages, usage R 4.4 solved it for me
+
+icc_for_model("m_RT ~ (1|country)", RT_dataA)
+icc_for_model("m_RT ~ (1|stimuli)", RT_dataA)
+
+```
+
+## Testing variables 
+
+```{r baseline}
+formula_to_check<-c("m_RT ~ country",
+                    "m_RT ~ Letters_n",
+                    "m_RT ~ Syllables_n",
+                    "m_RT ~ logUKWAC",
+                    "m_RT ~ logBBC",
+                    "m_RT ~ logBNC",
+                    "m_RT ~ country + Letters_n" ,
+                    "m_RT ~ country + Syllables_n")
+
+for (f in formula_to_check){
+  res<-lm_model(f,TRUE, RT_dataA)  
+}
+
+```
+## Mixed models - baseline sample A
+```{r}
+BIC_baseline <- NULL
+
+#classic: "m_RT ~ country +  Letters_n + Syllables_n + logUKWAC"
+#simple: simple "m_RT ~ country +  Letters_n + logUKWAC"
+#mixed: mmb "m_RT ~ (1|stimuli) + country +  Letters_n + logUKWAC"
+
+formula_to_check <- c("m_RT ~  country +  Letters_n + Syllables_n + logUKWAC",
+                      "m_RT ~  country +  Letters_n + Syllables_n + logBBC",
+                      "m_RT ~  country +  Letters_n + Syllables_n + logBNC")
+for (f in formula_to_check){
+  res<-lm_model(f,TRUE, RT_dataA)  
+  BIC_baseline<-rbind(BIC_baseline, c("model" = f, "BIC" = round(BIC(res),2), sample = "A"))
+  
+}
+
+## Mixed models - baseline sample B
+
+for (f in formula_to_check){
+  res<-lm_model(f, TRUE, RT_dataB)  
+  BIC_baseline<-rbind(BIC_baseline, c("model" = f, "BIC" = round(BIC(res),2), sample = "B"))
+}
+ BIC_out_name<- paste0(path, "/Step_03/out_3_EXT_RT/BIC_classic.csv")
+ fwrite(BIC_baseline, file = BIC_out_name)
+```
+
+
+
+
+

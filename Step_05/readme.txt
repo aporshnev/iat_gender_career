@@ -1,2 +1,3 @@
-Step 5.
-Adding LDM feature to baseline model and running regression analysis
+Step 5. Figures and tables 
+
+06_summary_report.RmD generates html version of report + two Figures 

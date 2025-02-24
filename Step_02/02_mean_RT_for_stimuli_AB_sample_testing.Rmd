@@ -1,0 +1,141 @@
+---
+title: "Stage2 mean for Stimuli"
+author: "Alexander Porshnev"
+date: "2023-10-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, results = 'asis', warning = FALSE)
+library(dplyr)
+library(knitr)
+library(psych)
+library(md.log)
+library(data.table)
+library(tidyr)
+```
+# Mean for reaction time by stimulus
+```{r}
+print_ttest<-function(out, add_caption =""){
+  cat(paste0("\n### t-test for RT on",add_caption, "\n"))
+  cat(paste0(out$method, "p-value = ", round(out$p.value, 3), " t = ", round(out$statistic, 3), " df = ", round(out$parameter, 3), "\n"),sep = "\n")
+}
+```
+
+
+```{r print_table_function, echo = FALSE, results = 'asis', warning = FALSE}
+#year<-2005
+#t_data_d<-t_data_SN_US
+print_tables<-function(t_data_d, year, incl_errors = TRUE){
+add_caption <- ""
+if (incl_errors == FALSE) {
+  t_data_d <- t_data_d %>% filter(trial_error!=1)
+  cat("\n## Excluding trials with errors\n")
+  add_caption = " Excluding trials with errors "  
+}
+
+female <- c("Rebecca", "Michelle", "Emily", "Julia", "Anna")
+male <- c("Ben", "Paul", "Daniel", "John", "Jeffrey")
+career<-c("Career", "Corporation", "Salary", "Office", "Professional", "Management", "Business")
+family<-c("Wedding", "Marriage", "Parents", "Relatives", "Family", "Home", "Children")
+#responces <- c("Female/Career", "Female/Family", "Male/Career", "Male/Family", "Female/Family", "Female/Career", "Male/Family",#"Male/Career")
+
+congruent_pairing<-c("Female/Family,Male/Career", "Male/Career,Female/Family", "Career/Male,Family/Female")
+incongruent_pairing<-c("Female/Career,Male/Family", "Male/Family,Female/Career", "Family/Male,Career/Female")
+block_pairing <- c("Female/Career,Male/Family","Female/Family,Male/Career", "Male/Career,Female/Family", "Male/Family,Female/Career", "Family/Male,Career/Female", "Career/Male,Family/Female")
+
+t_data_d$congruent_trial<-ifelse(t_data_d$block_pairing_definition %in% congruent_pairing, 1 , ifelse(t_data_d$block_pairing_definition %in% incongruent_pairing, 0 , NA))
+
+
+#table(t_data_d$block_pairing_definition)
+table_RT <- t_data_d %>% group_by(trial_name, congruent_trial) %>% summarise(M = mean(trial_latency), Sum = sum(trial_latency), N = n(), .groups = "keep") %>% 
+  filter(trial_name  %in% c(female, male, career, family) & !is.na(congruent_trial))
+
+
+#year=2005
+if (incl_errors == FALSE) {
+  table_RT_out<-table_RT
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)]<-gsub("/Career", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)])
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)]<-gsub("/Family", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(family, career)])
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)]<-gsub("Male/", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)])
+#  table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)]<-gsub("Female/", "", table_RT_out$trial_response[table_RT_out$trial_name %in% c(female, male)])
+  table_RT_out$trial_name<-tolower(table_RT_out$trial_name)
+  
+  table_RT_out$trial_response<-tolower(table_RT_out$trial_response)
+}
+
+
+table_report <-table_RT %>% select(trial_name, congruent_trial, M)
+#table_report$category<-NA
+#table_report$category[grep(pattern = "Male", table_report$trial_response)]<-"male"
+#table_report$category[grep(pattern = "Female", table_report$trial_response)]<-"female"
+#table_report$trial_response<-gsub("Male/", "", table_report$trial_response)
+#table_report$trial_response<-gsub("Female/", "", table_report$trial_response)
+
+table_out <- table_report %>% pivot_wider(names_from = congruent_trial, values_from = "M") %>%
+   arrange (trial_name)
+
+print(kable(table_out, caption = paste0("Mean reaction times for trials in incongruent vs congruent conditions", add_caption)))
+
+
+congrM <- table_RT %>% filter(congruent_trial==1) %>% select(trial_name, congruent_trial, M)
+incongrM <- table_RT %>% filter(congruent_trial==0) %>% select(trial_name, congruent_trial, M)
+
+print_ttest(t.test(congrM$M, incongrM$M),  add_caption = "Congruent vs Incongruent conditions")
+
+return (table_RT)
+}
+```
+
+
+```{r describe_year_function, echo = FALSE, results = 'asis', warning = FALSE}
+describe_clean_data_RT<-function(year){
+#   year =2016
+#   sample_name = "A"
+  
+#path = ""
+
+  for(sample_name in c("A","B"))
+  {
+    p_filenameSN = paste0(path, "/Step_01/out_1b_Split/p_",year, "_",sample_name,".csv")
+  t_filenameSN = paste0(path, "/Step_01/out_1b_Split/t_",year, "_",sample_name,".csv")
+  p_data_SN <- fread(p_filenameSN, colClasses=c("session_id" = "character"))
+  t_data_SN <- fread(t_filenameSN, colClasses=c("session_id" = "character"))
+  
+  p_data_SN_US<-p_data_SN %>% filter(countryres == "US")
+  t_data_SN_US<-t_data_SN %>% filter(session_id %in% p_data_SN_US$session_id)
+  
+  RT_US<-print_tables(t_data_SN_US, year,  incl_errors = TRUE)
+  RT_US$country<-"US"
+  
+  p_data_SN_UK<-p_data_SN %>% filter(countryres == "UK")
+  t_data_SN_UK<-t_data_SN %>% filter(session_id %in% p_data_SN_UK$session_id)  
+  RT_UK<-print_tables(t_data_SN_UK, year,  incl_errors = TRUE)
+  RT_UK$country<-"UK"
+  
+  table_RT_out<-rbind(RT_UK, RT_US)
+  
+  table_RT_out$trial_name<-tolower(table_RT_out$trial_name)
+  fwrite(table_RT_out, file = paste0(path,"/Step_02/out_2_RT/RT_", year, "_", sample_name,".csv"))
+}
+
+}
+
+
+```
+
+
+
+```{r main, echo = FALSE, results = 'asis', warning = FALSE}
+md.log("Start", file="log.txt", append =FALSE, time = TRUE)
+setwd('..')
+path = getwd()
+
+for (i in 2005:2021){
+  md.log(paste0("year", i, "started"))
+  cat(paste0("\n# ", i, "\n"))
+  describe_clean_data_RT(i)
+  md.log(paste0("year", i, "done"))
+}
+```
+
