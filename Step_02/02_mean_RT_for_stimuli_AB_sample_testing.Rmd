@@ -127,9 +127,15 @@ describe_clean_data_RT<-function(year){
 
 
 ```{r main, echo = FALSE, results = 'asis', warning = FALSE}
+dir_structure<-c("Step_02/out_2_RT/",
+                 "Step_02/out_2a_RT_merged/")
+
+for (d in dir_structure){
+dir.create(file.path(path, d), showWarnings = FALSE)
+}
 md.log("Start", file="log.txt", append =FALSE, time = TRUE)
-setwd('..')
-path = getwd()
+#setwd('..')
+#path = getwd()
 
 for (i in 2005:2021){
   md.log(paste0("year", i, "started"))

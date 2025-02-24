@@ -162,12 +162,19 @@ add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_
 ## LDM features vs baseline model BNC
 
 ```{r}
+dir_structure<-c("Step_04/out_4_Models_classic/",
+                 "Step_04/out_4_Summary_classic/")
+
+for (d in dir_structure){
+dir.create(file.path(path, d), showWarnings = FALSE)
+}
+
 corpora_name<-c("subtitles", "bnc", "ukwac")
 init<-NULL
 j<-1
-setwd("..")
-path = getwd()
-path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/iat_gender_career"
+#setwd("..")
+#path = getwd()
+#path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/iat_gender_career"
 
 for (j in 1:3)
   {

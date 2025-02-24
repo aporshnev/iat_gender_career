@@ -19,8 +19,13 @@ library(performance)
 ```
 
 ```{r}
-setwd("..")
-path = getwd()
+#setwd("..")
+#path = getwd()
+dir_structure<-c("Step_03/out_3_EXT_RT/")
+
+for (d in dir_structure){
+dir.create(file.path(path, d), showWarnings = FALSE)
+}
 
 sample_name = "A"
 samples<-c("A", "B")
