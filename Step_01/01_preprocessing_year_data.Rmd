@@ -358,7 +358,7 @@ return (t_prev_year_check)
  
  
 ```{r}
-md.log("Start preprocessing", file="log_preprocessing.txt", append =FALSE, time = TRUE, sys.info = FALSE)
+md.log("Start preprocessing", file="preprocessing.log", append =FALSE, time = TRUE, sys.info = FALSE)
 t_prev <- NULL
 i<-2005
 for(i in 2005:2021)
