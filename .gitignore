@@ -9,3 +9,5 @@ log.txt
 **/*.csv
 **/**/*.csv
 in_RAW_IAT_data/*.*
+feature_testing.log
+in_Distances
