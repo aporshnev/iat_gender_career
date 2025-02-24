@@ -43,7 +43,7 @@ dir_structure<-c(#"Step_01/out_1_Clean/",
                  "Step_04/out_4_Summary_classic/",
                  "Step_05/out_05_Summary_Figures_classic"
                  )
-
+#creating directories structure 
 for (d in dir_structure){
 dir.create(file.path(path, d), showWarnings = FALSE)
 }
@@ -52,7 +52,7 @@ dir.create(file.path(path, d), showWarnings = FALSE)
 #file_name<-a[1]
 #sessionInfo()
 
-
+#main pipeline
 for (a in analysis_structure){
 render_report(path, a)}
 
