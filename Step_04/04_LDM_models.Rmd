@@ -106,23 +106,24 @@ add_feature<-function(fname, baseline, ldm_name, regression_type = TRUE, sample_
   f <- paste0(baseline, paste0(" + ", ldm_name))
   res<-lm_model(f,regression_type, RT_data_use)  
   
-  #Comparison baseline with LDM
-  file_tab_model = paste0(path, "/Step_04/out_4_Models_",model_type,"/", sample_name,"_", ldm_name,  "_", corpora_from_baseline(baseline), ".html")
-  print(tab_model(b_model, res, file = file_tab_model))
-  md.log(paste0(file_tab_model, "- saved"))
-  # Formating for nice output in html 
+  ##Comparison baseline with LDM
+  
+  #file_tab_model = paste0(path, "/Step_04/out_4_Models_",model_type,"/", sample_name,"_", ldm_name,  "_", corpora_from_baseline(baseline), ".html")
+  #print(tab_model(b_model, res, file = file_tab_model))
+  #md.log(paste0(file_tab_model, "- saved"))
+  
+  ## Formating for nice output in html 
   #cat(tab$page.style)
   #cat(tab$page.content)
  
   f_congr <- paste0(baseline, paste0(" + ", ldm_name, "+ congruent"))
   res_congr<-lm_model(f_congr,regression_type, RT_data_use)  
   
-  #Comparison LDM and LDM with congruency
-  file_tab_model = paste0(path,"/Step_04/out_4_Models_",model_type,"/",sample_name, "_", ldm_name, "_", corpora_from_baseline(baseline), "_congruent.html")
-  print(tab_model(res, res_congr, file = file_tab_model))
-  md.log(paste0(file_tab_model, "- saved"))
-  #cat(tab$page.style)
-  #cat(tab$page.content)
+  ##Comparison LDM and LDM with congruency
+  #file_tab_model = paste0(path,"/Step_04/out_4_Models_",model_type,"/",sample_name, "_", ldm_name, "_", corpora_from_baseline(baseline), "_congruent.html")
+  #print(tab_model(res, res_congr, file = file_tab_model))
+  #md.log(paste0(file_tab_model, "- saved"))
+  
 
   compare <- anova(b_model, res)
   print(kable(compare, caption = "Baseline vs LDM feature"))
