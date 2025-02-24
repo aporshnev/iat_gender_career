@@ -150,13 +150,12 @@ if (!is.null(t_prev_year_check)) {
   }
 }
 
-for (j in data_files){
-    d<-fread(j, header = TRUE, sep = "\t", colClasses=c("session_id" = "character"))
-    data_from_year<-rbind(data_from_year, d)    
+for (j in data_files){ 
+    d<-fread(j, header = TRUE, sep = "\t", colClasses=c("session_id" = "character")) 
+     data_from_year<-rbind(data_from_year, d)    
   }
 
 t_data<-data_from_year # trial level data
-
 t_data_no_dpl <- t_data %>% distinct(trial_number, trial_name, trial_latency, session_id, block_number, .keep_all = TRUE) 
 
 cat(paste0("\n# ", year, "\n"))
