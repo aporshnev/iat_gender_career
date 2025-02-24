@@ -122,7 +122,7 @@ p_data <- fread(p_data_files, header = TRUE, sep =",", colClasses=c("session_id"
 stats<-cbind(stats, total = length(unique(p_data$session_id)))
 
 
-raw_data_dir<-paste0("C:\\Alex\\Maynooth\\IAT\\Gender-Career\\source_Datasets\\GenderCareer_iat_", year)
+raw_data_dir<-paste0(init_dir, "/GenderCareer_iat_", year)
 data_files<-list.files(raw_data_dir)
 data_files<-data_files[grep("*.txt$",data_files)]
 data_files<-paste0(raw_data_dir,"/", data_files)
