@@ -12,10 +12,12 @@ library(knitr)
 library(ggplot2)
 library(cowplot)
 library(stringr)
+library(gridExtra)
 
 knitr::opts_chunk$set(echo = FALSE, asis = TRUE)
-#setwd("..")
-#path<-getwd()
+#setwd()
+#
+path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check/"
 #setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/Jul24_stage4/")
 dir_structure<-c("Step_05/out_05_Summary_Figures_classic")
 
@@ -87,7 +89,7 @@ classic<- c("_cbow",
 "_ppmi_ngram",
 "_probability_ratio_ngram",
 "_pmi_ngram",
-"_glove_6B_300d",
+"_glove_6B_300d","_glove_42B_300d","_GoogleNews_vectors_negative300",
 "_log_ngram")
 
 mdls<-c(llms, classic)
@@ -116,8 +118,11 @@ dR$window_radius<-"-"
 for (i in 1:length(rds)){
   dR$window_radius[grep(rds[i],dR$lmd_A)]<-rds_s[i]
 }
+gloves<-c("_glove_42B_300d", "_glove_6B_300d")
+for (i in gloves){
+  dR$window_radius[grep(i,dR$lmd_A)]<-"r_global"}
 
-dR$window_radius[grep("_glove_6B_300d",dR$lmd_A)]<-"r_global"
+dR$window_radius[grep("_GoogleNews_vectors_negative300",dR$lmd_A)]<-"na"
 
 
 for (i in 1:length(llms)){
@@ -138,7 +143,8 @@ for (i in 1:length(embs_s)){
   dR$embedding_size[grep(embs_s[i],dR$lmd_A)]<-embs_s[i]
 }
 
-dR$embedding_size[grep("_glove_6B_300d",dR$lmd_A)]<-"300"
+for (i in gloves){
+dR$embedding_size[grep(i,dR$lmd_A)]<-"300"}
 #dR$embedding_size[grep("_llama_2_7b_chat_Q4_K_M",dR$lmd_A)]<-"4096"
 #dR$embedding_size[grep("_mistral_7b_v0_1_Q4_K_M",dR$lmd_A)]<-"4096"
 #dR$embedding_size[grep("_llama_2_13b_chat_Q5_K_S",dR$lmd_A)]<-"5120"
@@ -159,7 +165,9 @@ t_mdls<-rbind(c("_cbow","predict"),
           c("_ppmi_ngram","ngram"),
           c("_probability_ratio_ngram","ngram"),
           c("_pmi_ngram","ngram"),
-          c("_glove_6B_300d","count")
+          c("_glove_6B_300d","count"),
+          c("_glove_42B_300d","count"),
+          c("_GoogleNews_vectors_negative300", "predict")
                     )
 t_mdls<-as.data.frame(t_mdls)
 name<-sub('.', '', t_mdls$llms)
@@ -363,7 +371,6 @@ c1<-c1 + guides(colour="none")
 c1
 ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/fig_2_Cor_top_without_cor_", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
 c<-c + guides(colour="none")
-
 
 
 
