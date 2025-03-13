@@ -22,21 +22,21 @@ render_report = function(path, file_name) {
 path=getwd()
 
 analysis_structure<-c(
-  #"/Step_01/01_preprocessing_year_data",
-  #          "/Step_01/01a_preprocessing",
-  #          "/Step_01/01b_split_data",
-  #          "/Step_02/02_mean_RT_for_stimuli_AB_sample_testing",
-  #          "/Step_02/02a_\|merge_RT",
+  "/Step_01/01_preprocessing_year_data",
+            "/Step_01/01a_preprocessing",
+            "/Step_01/01b_split_data",
+            "/Step_02/02_mean_RT_for_stimuli_AB_sample_testing",
+            "/Step_02/02a_merge_RT",
             "/Step_03/03_extend_RT",
             "/Step_04/04_LDM_models",
             "/Step_05/05_summary_report"
             )
-dir_structure<-c(#"Step_01/out_1_Clean/",
-                 #"Step_01/out_1a_Clean_noexp/",
-                 #"Step_01/out_1b_Split/",
-                 #"Step_01/out_1a_Stats/",
-                 #"Step_01/out_1_Stats/",
-                 #"Step_02/out_2_RT/",
+dir_structure<-c("Step_01/out_1_Clean/",
+                 "Step_01/out_1a_Clean_noexp/",
+                 "Step_01/out_1b_Split/",
+                 "Step_01/out_1a_Stats/",
+                 "Step_01/out_1_Stats/",
+                 "Step_02/out_2_RT/",
                  "Step_02/out_2a_RT_merged/",
                  "Step_03/out_3_EXT_RT/",
                  "Step_04/out_4_Models_classic/",
