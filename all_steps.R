@@ -12,23 +12,31 @@ library(stringr)
 library(performance)
 library(ggplot2)
 library(cowplot)
+
+start_year<-2019
+finish_year<-2019
+
 setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check")
+path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check"
+
 render_report = function(path, file_name) {
-  rmarkdown::render(paste0(path,file_name, ".RmD"), params = list(path = path),
-  output_file = paste0(path, file_name, ".html")
+  rmarkdown::render(paste0(path,file_name, ".RmD"), params = list(path = path, start_year, finish_year, model_type="classic"),
+  output_file = paste0(path, file_name, start_year,"-", finish_year,".html")
   )
 }
 
-path=getwd()
+
 
 analysis_structure<-c(
 #  "/Step_01/01_preprocessing_year_data",
 #           "/Step_01/01a_preprocessing",
 #           "/Step_01/01b_split_data",
 #           "/Step_02/02_mean_RT_for_stimuli_AB_sample_testing",
-#           "/Step_02/02a_merge_RT",
-#            "/Step_03/03_extend_RT",
-#            "/Step_04/04_LDM_models",
+           "/Step_02/02a_merge_RT",
+           "/Step_03/03_extend_RT"
+  ,
+  "/Step_04/04_LDM_models"
+  ,
             "/Step_05/05_summary_report"
             )
 dir_structure<-c(
@@ -42,12 +50,22 @@ dir_structure<-c(
                  "Step_03/out_3_EXT_RT/",
                  "Step_04/out_4_Models_classic/",
                  "Step_04/out_4_Summary_classic/",
-                 "Step_05/out_05_Summary_Figures_classic"
+                 "Step_05/out_05_Summary_Figures_classic/"
                  )
+
+dir_structure<-c(
+  "Step_02/out_2a_RT_merged/",
+  "Step_03/out_3_EXT_RT/",
+  "Step_04/out_4_Models_classic/",
+  "Step_04/out_4_Summary_classic/",
+  "Step_05/out_05_Summary_Figures_classic/"
+)
+
+dir_structure<-paste0(dir_structure, start_year,"-", finish_year,"/")
 #creating directories structure 
-#for (d in dir_structure){
-#dir.create(file.path(path, d), showWarnings = FALSE)
-#}
+for (d in dir_structure){
+ dir.create(file.path(path, d), showWarnings = FALSE)
+}
 
 #render_report(path, a[1])
 #file_name<-a[1]
@@ -58,5 +76,11 @@ for (a in analysis_structure){
 render_report(path, a)}
 
 
+years<-c(2009, 2014, 2019)
+for (y in years){
+start_year<-y
+finish_year<-y
+render_report(path, "/Step_05/05_summary_report")
+}
 
 
