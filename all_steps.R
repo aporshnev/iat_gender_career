@@ -31,13 +31,12 @@ analysis_structure<-c(
 #            "/Step_04/04_LDM_models",
             "/Step_05/05_summary_report"
             )
-dir_structure<-c(
-  "Step_01/out_1_Clean/",
-  "Step_01/out_1a_Clean_noexp/",
-  "Step_01/out_1b_Split/",
-  "Step_01/out_1a_Stats/",
-  "Step_01/out_1_Stats/",
-  "Step_02/out_2_RT/",
+dir_structure<-c("Step_01/out_1_Clean/",
+                 "Step_01/out_1a_Clean_noexp/",
+                 "Step_01/out_1b_Split/",
+                 "Step_01/out_1a_Stats/",
+                 "Step_01/out_1_Stats/",
+                 "Step_02/out_2_RT/",
                  "Step_02/out_2a_RT_merged/",
                  "Step_03/out_3_EXT_RT/",
                  "Step_04/out_4_Models_classic/",
