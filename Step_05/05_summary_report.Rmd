@@ -13,17 +13,23 @@ library(ggplot2)
 library(cowplot)
 library(stringr)
 library(patchwork)
+#library(gridExtra)
 
 knitr::opts_chunk$set(echo = FALSE, asis = TRUE)
-#setwd("..")
-#path<-getwd()
-#setwd
+#setwd()
 #
-path=("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5/")
-dir_structure<-c("Step_05/out_05_Summary_Figures_classic")
+#path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check/"
+#setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/Jul24_stage4/")
+#start_year<-2019
+#finish_year<-2019
+#model_type<-"classic"
+
+path_out_figures<-paste0(path, "/Step_05/out_05_Summary_", model_type,"/", start_year,"-", finish_year,"/")
+
+dir_structure<-c(paste0("/Step_05/out_05_Summary_", model_type), paste0("/Step_05/out_05_Summary_", model_type,"/",start_year,"-", finish_year,"/"))
 
 for (d in dir_structure){
-dir.create(file.path(path, d), showWarnings = FALSE)
+dir.create(file.path(path, d), showWarnings = TRUE)
 }
 ```
 
@@ -46,11 +52,12 @@ getBIC <- function (df_BIC, corpora_name, sample_name ){
 ```{r Reading&Transforming data from modelling output}
 #Reading data from modelling output for sample A&B
 model_type="classic"
-dA<- fread(paste0(path,"/Step_04/out_4_Summary_classic/Summary_table_A_llms_", model_type,".csv"))
+dA<- fread(paste0(path,"/Step_04/out_4_Summary_classic/", start_year,"-", finish_year,"/Summary_table_",start_year,"_", finish_year, "_A_", model_type,".csv"))
+
 #View(dA)
 dA$ext_model<-paste0(dA$lmd, dA$baseline)
 
-dB<- fread(paste0(path,"/Step_04/out_4_Summary_classic/Summary_table_B_llms_", model_type,".csv"))
+dB<- fread(paste0(path,"/Step_04/out_4_Summary_classic/", start_year,"-", finish_year,"/Summary_table_",start_year,"_", finish_year,"_B_",  model_type,".csv"))
 dB$ext_model<-paste0(dB$lmd, dB$baseline)
 
 dR<- left_join(dA, dB, by = join_by("ext_model" == "ext_model"), suffix = c("_A", "_B"))
@@ -90,7 +97,7 @@ classic<- c("_cbow",
 "_ppmi_ngram",
 "_probability_ratio_ngram",
 "_pmi_ngram",
-"_glove_6B_300d",
+"_glove_6B_300d","_glove_42B_300d","_GoogleNews_vectors_negative300",
 "_log_ngram")
 
 
@@ -129,8 +136,11 @@ dR$window_radius<-"-"
 for (i in 1:length(rds)){
   dR$window_radius[grep(rds[i],dR$lmd_A)]<-rds_s[i]
 }
+gloves<-c("_glove_42B_300d", "_glove_6B_300d")
+for (i in gloves){
+  dR$window_radius[grep(i,dR$lmd_A)]<-"r_global"}
 
-dR$window_radius[grep("_glove_6B_300d",dR$lmd_A)]<-"r_global"
+dR$window_radius[grep("_GoogleNews_vectors_negative300",dR$lmd_A)]<-"na"
 
 
 for (i in 1:length(llms)){
@@ -151,7 +161,8 @@ for (i in 1:length(embs_s)){
   dR$embedding_size[grep(embs_s[i],dR$lmd_A)]<-embs_s[i]
 }
 
-dR$embedding_size[grep("_glove_6B_300d",dR$lmd_A)]<-"300"
+for (i in gloves){
+dR$embedding_size[grep(i,dR$lmd_A)]<-"300"}
 #dR$embedding_size[grep("_llama_2_7b_chat_Q4_K_M",dR$lmd_A)]<-"4096"
 #dR$embedding_size[grep("_mistral_7b_v0_1_Q4_K_M",dR$lmd_A)]<-"4096"
 #dR$embedding_size[grep("_llama_2_13b_chat_Q5_K_S",dR$lmd_A)]<-"5120"
@@ -172,7 +183,9 @@ t_mdls<-rbind(c("_cbow","predict"),
           c("_ppmi_ngram","ngram"),
           c("_probability_ratio_ngram","ngram"),
           c("_pmi_ngram","ngram"),
-          c("_glove_6B_300d","count")
+          c("_glove_6B_300d","count"),
+          c("_glove_42B_300d","count"),
+          c("_GoogleNews_vectors_negative300", "predict")
                     )
 t_mdls<-as.data.frame(t_mdls)
 name<-sub('.', '', t_mdls$llms)
@@ -192,7 +205,8 @@ dR$case[grepl("Upper",dR$lmd_A)]<-"Captzd"
 ```{r adding BIC }
 
 # BIC baseline calculated in previous steps
-d_BIC<-read.csv(paste0(path,"/Step_03/out_3_EXT_RT/BIC_", model_type, ".csv"))
+
+d_BIC<-read.csv(paste0(path,"/Step_03/out_3_EXT_RT/",start_year,"-", finish_year,"/BIC_", start_year,"_", finish_year,"_",model_type, ".csv"))
 d_BIC$corpora<-NA
 d_BIC$corpora[grep("logUKWAC", d_BIC$model)] <-"ukwac"
 d_BIC$corpora[grep("logBNC", d_BIC$model)] <-"bnc"
@@ -201,8 +215,6 @@ d_BIC$corpora[grep("logBBC", d_BIC$model)] <-"subtitles"
 dR$base_BIC_A<-NA
 
 dR$base_BIC_A[dR$corpora == "bnc"]<-  getBIC(d_BIC, "bnc", "A") #1178.2
-s<-getBIC(d_BIC, "bnc", "A")
-s[[1]]
 dR$base_BIC_A[dR$corpora == "subtitles"]<- getBIC(d_BIC, "subtitles", "A") #1180.82
 dR$base_BIC_A[dR$corpora == "ukwac"]<-getBIC(d_BIC, "ukwac", "A") #1177.56
 
@@ -280,11 +292,9 @@ t<-dR %>% group_by(family) %>% summarise(n= n(),
                                          allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue),
                                                 allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue)/n()*100, .groups = 'drop')
 
-dR$dBICA<-dR$base_BIC_A - dR$BIC_A
-
-fwrite(dR, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\AB_Summary", model_type, ".csv"))
-fwrite(t, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\T3_", model_type, ".csv"))
-fwrite(r, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\T2_", model_type, ".csv"))
+fwrite(t, paste0(path_out_figures, "T3_", model_type, ".csv"))
+fwrite(r, paste0(path_out_figures, "T2_", model_type, ".csv"))
+fwrite(dR, paste0(path_out_figures, "AB_Summary", model_type, ".csv"))
 
 table_out(dR$family, "Family")
 
@@ -316,18 +326,20 @@ p<-p + guides(colour="none")
 p
 w_img=2000
 h_img=2000
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_3", model_type,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "F3_BIC_", model_type,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 
 tmp<-dR %>% filter(measure == "-") %>% select(model)
-dR10 <-  dR %>% filter(measure!="cor") %>%
+#%>% filter(measure!="cor")
+dR10 <-  dR  %>%
   arrange(dBICA) %>%
   group_by(family) %>%
   top_n(10)
-
+#names(dR10)
 p1 <- ggplot(dR10, aes(x=family, y=dBICA, color = family)) + 
   geom_violin(trim=FALSE)+
   xlab("") + ylab("BIC change") +
   geom_jitter(shape=16, position=position_jitter(0.3))+
+  geom_text(aes(label = lmd_A), nudge_y=0.05, check_overlap = FALSE, size =0.8)+
   scale_fill_brewer(palette="RdBu") + 
 theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
   theme(axis.text.x = element_text(size = rel(1.3), angle = 0))+
@@ -336,8 +348,9 @@ theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
         panel.grid = element_line(color = "grey90"),
         axis.line = element_line(color= "grey"))
 p1<-p1 + guides(colour="none")
+
 p1
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_4_with_out_cor", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "F4_BIC_top10_", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
 
 dR$absCor<-abs(dR$corLDMmRT_A)
 
@@ -356,17 +369,19 @@ c <- ggplot(dR, aes(x=family, y=absCor, color = family)) +
 c<-c + guides(colour="none")
 
 c
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/fig_1_Cor", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
-cR10 <-  dR%>% filter(measure!="cor") %>%select(model, family, absCor) %>% unique() %>%
+ggsave(paste0(path_out_figures, "F1_absCor_", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
+cR10 <-  dR%>% select(model, family, absCor, lmd_A) %>% unique() %>%
   arrange(absCor) %>%
   group_by(family) %>%
   top_n(10)
 
 cR10[order(cR10$absCor, decreasing = TRUE),]
 
+
 c1 <- ggplot(cR10, aes(x=family, y=absCor, color = family)) + 
   geom_violin(trim=FALSE)+
   geom_jitter(shape=16, position=position_jitter(0.3))+
+  geom_text(aes(label = lmd_A), nudge_y=0.05, check_overlap = TRUE)+
 #  xlab("Model family")
   xlab("") +
   ylab("Absolute Correlation") +
@@ -379,20 +394,19 @@ c1 <- ggplot(cR10, aes(x=family, y=absCor, color = family)) +
         axis.line = element_line(color= "grey"))
 c1<-c1 + guides(colour="none")
 c1
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/fig_2_Cor_top_without_cor_", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"F2_Cor_top10_", model_type,".png"),width = w_img, height  = h_img,  units = "px", dpi = 300 )
 c<-c + guides(colour="none")
 
 
 
-
 plot_grid(c,c1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/Correlations_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "F21_Cor_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 
 plot_grid(p,p1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "F43_BIC_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 
 plot_grid(c,c1,p,p1, align = "hv", ncol = 2, rel_heights = c(1/2, 1/2), labels = c("a", "b", "c","d"))
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/COR_BIC_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "F5_COR_BIC", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 
 
 
@@ -438,12 +452,8 @@ p_ngram
 
 w_img=2000
 h_img=2000
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X1_BIC_ngram", model_type,min_BICf,"_", max_BICf, ".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/X1_BIC_ngram_", model_type,"_", min_BICf,"_", max_BICf, ".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 ```
-
-
-
-
 
 ```{r}
 # getBIC(d_BIC, "ukwac", "A") 
@@ -496,7 +506,7 @@ p_llms <- ggplot(dRl, aes(x=model, y=dBICA, color = measure,  shape = case)) +
 p_llms
 w_img=2000
 h_img=2000
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X2_BIC_llms", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/X2_BIC_llms", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 
 
 ```
@@ -534,7 +544,7 @@ p_predict <- ggplot(dRl, aes(x=model, y=dBICA, color = corpora,  shape = window_
 p_predict
 w_img=2000
 h_img=2000
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X2_BIC_predict", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/X2_BIC_predict", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 
 
 ```
@@ -574,7 +584,7 @@ p_count <- ggplot(dRl, aes(x=model, y=dBICA, color = corpora,  shape = window_ra
 p_count
 w_img=2000
 h_img=2000
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X2_BIC_count", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/X2_BIC_count", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 
 
 ```
@@ -589,5 +599,5 @@ combined_plot <- p_ngram / p_count /p_predict / p_llms  +
 # Display the combined plot
 combined_plot
 
-ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X5_4BIC_fig_", model_type,min_BICf,"_", max_BICf,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/X5_4BIC_fig_", model_type,min_BICf,"_", max_BICf,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 ```

@@ -1,0 +1,62 @@
+---
+title: "2a Merge RT"
+author: "Alexander Porshnev"
+date: "2025-02-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(data.table)
+library(dplyr)
+```
+
+# Merge RT means from different years by countries
+
+## Separately for A and B samples
+## for UK, US or mean for UK and US together
+```{r functions}
+cor_clean_data_RT<-function(year_start, year_finish, sample_name = "A"){
+  sample_name = "B"
+  RT_data = NULL
+  year_start<-2005
+  year_finish<-2021
+  for (year in year_start:year_finish)
+  {
+  t_filename = paste0(path, "/out_2_RT/RT_", year, "_", sample_name, ".csv")
+
+  #t_filename = paste0(path, "/Step_02/out_2_RT/RT_", year, "_", sample_name, ".csv")
+  RT_data_year <- fread(t_filename) %>% select("trial_name",	"congruent_trial",	"M",	"country")
+  names(RT_data_year)[names(RT_data_year) == 'M'] <- paste0("M_",year)
+
+    if (is.null(RT_data)) 
+    {
+  RT_data <- RT_data_year
+  } else  {
+    print(year)
+  RT_data<-left_join(RT_data, RT_data_year, by = join_by(trial_name == trial_name, congruent_trial == congruent_trial, country == country), suffix = c("", paste0("_",year)))
+  }
+  
+}
+
+
+cor_RT_years <- cor(RT_data %>% select(paste0("M_",2005:2021)))
+fwrite(cor_RT_years, paste0(path, "/out_2_RT_H3/cor_", year_start, "_", year_finish, "_", sample_name, ".csv"))
+
+cor_RT_years <- cor(RT_data %>% filter(country == "UK") %>% select(paste0("M_",2005:2021)))
+fwrite(cor_RT_years, paste0(path, "/out_2_RT_H3/cor_UK_", year_start, "_", year_finish, "_", sample_name, ".csv"))
+
+cor_RT_years <- cor(RT_data %>% filter(country == "US") %>% select(paste0("M_",2005:2021)))
+fwrite(cor_RT_years, paste0(path, "/out_2_RT_H3/cor_US_", year_start, "_", year_finish, "_", sample_name, ".csv"))
+
+fwrite(RT_data, paste0(path, "/out_2_RT_H3/RT_", year_start, "_", year_finish, "_", sample_name, ".csv"))
+}
+```
+
+
+```{r main}
+path<-getwd()
+cor_clean_data_RT(2005, 2021, sample_name = "A")
+cor_clean_data_RT(2005, 2021, sample_name = "B")
+```
+
