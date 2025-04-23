@@ -12,11 +12,14 @@ library(knitr)
 library(ggplot2)
 library(cowplot)
 library(stringr)
+library(patchwork)
 
 knitr::opts_chunk$set(echo = FALSE, asis = TRUE)
 #setwd("..")
 #path<-getwd()
-#setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/Jul24_stage4/")
+#setwd
+#
+path=("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5/")
 dir_structure<-c("Step_05/out_05_Summary_Figures_classic")
 
 for (d in dir_structure){
@@ -90,8 +93,10 @@ classic<- c("_cbow",
 "_glove_6B_300d",
 "_log_ngram")
 
+
 mdls<-c(llms, classic)
-            
+      
+      
 
 mdls_s<-sub('.', '', mdls)
 dR$model<-NA
@@ -101,6 +106,14 @@ for (i in 1:length(mdls)){
 }
 table_out(!is.na(dR$model), "Model check")
 table_out(dR$model, "Models")
+
+pretrained<-c(llms, "_glove_6B_300d")
+dR$pretrained<-0
+for (i in 1:length(pretrained)){
+  dR$pretrained[grepl(pretrained[i],dR$lmd_A)]<-1
+}
+table(dR$pretrained)
+
 
 rds<-c("_r1",
         "_r10",
@@ -170,6 +183,10 @@ for (i in 1:length(t_mdls$name)){
   dR$family[grep(t_mdls[i,1],dR$lmd_A)]<-t_mdls[i,2]
 }
 table(dR$family, dR$model) 
+
+dR$case<-"Lower"
+dR$case[grepl("Upper",dR$lmd_A)]<-"Captzd"
+
 ```
 
 ```{r adding BIC }
@@ -263,9 +280,11 @@ t<-dR %>% group_by(family) %>% summarise(n= n(),
                                          allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue),
                                                 allC = sum(C0_bAB& C4_dBIC_AB&C3_AB_pvalue)/n()*100, .groups = 'drop')
 
+dR$dBICA<-dR$base_BIC_A - dR$BIC_A
+
+fwrite(dR, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\AB_Summary", model_type, ".csv"))
 fwrite(t, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\T3_", model_type, ".csv"))
 fwrite(r, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\T2_", model_type, ".csv"))
-fwrite(dR, paste0(path,"/Step_05/out_05_Summary_Figures_",model_type, "\\AB_Summary", model_type, ".csv"))
 
 table_out(dR$family, "Family")
 
@@ -281,7 +300,6 @@ table_out(table(dR$family, dR$C1C2C3C4), "Family & Condition C1&C2&C3&C4", 0)
 
 dR<-dR[!is.na(dR$family),]
 
-dR$dBICA<-dR$base_BIC_A - dR$BIC_A
 
 p <- ggplot(dR, aes(x=family, y=dBICA, color = family)) + 
   geom_violin(trim=FALSE)+
@@ -375,6 +393,201 @@ ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/BIC_fig_", mo
 
 plot_grid(c,c1,p,p1, align = "hv", ncol = 2, rel_heights = c(1/2, 1/2), labels = c("a", "b", "c","d"))
 ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/COR_BIC_fig_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+
+
+
+```
+## additional Figures
+```{r}
+min_BICf = -5#-5 for all
+max_BICf = 31 #31 for all we compare with the best baseline with smallest BIC - ukwac
+# remove misleading llms + 3 corpora (as it makes no sense)
 ```
 
 
+```{r}
+dRf<-dR[dR$family=="ngram", ]
+
+dRf$model<-sub("_ngram", "", dRf$model)
+
+#names(dRf)
+
+p_ngram <- ggplot(dRf, aes(x=model, y=dBICA, color = corpora,  shape = window_radius)) + 
+  geom_point(size = 3) +
+  scale_shape_manual(values = c(1, 2, 5, 6 )) + 
+  labs(x = "", 
+       y= expression(Delta * "BIC"),
+       title = "n-gram") +
+#    geom_jitter(shape=16, position=position_jitter(0.3))+
+  scale_fill_brewer(palette="RdBu") + 
+
+    scale_color_manual(values = c("orange", "blue", "darkgreen")) +  # Three colors for three corpora levels
+  #scale_color_gradient(low = "lightblue", high = "darkblue") +
+   scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
+  theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
+  theme(axis.text.x = element_text(size = rel(1), angle = 00))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
+        panel.grid.major = element_line(size = 0.5),
+        panel.grid.minor = element_line(size = 0.25))
+p_ngram
+
+w_img=2000
+h_img=2000
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X1_BIC_ngram", model_type,min_BICf,"_", max_BICf, ".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+```
+
+
+
+
+
+```{r}
+# getBIC(d_BIC, "ukwac", "A") 
+#ukwac best for baseline
+
+dRl<-dR[dR$pretrained ==1 &  dR$corpora == "ukwac" , ]
+
+nice_names<-rbind(c("dolphin_2_8_mistral_7b_v02_Q8_0", "mistral_g2-07B"),
+c("glove_6B_300d", "GLoVE_06B"),
+c("Hermes_3_Llama_3_1_70B_Q5_K_M", "llama_g3.1-70B"),
+c("llama_2_13b_Q8_0", "llama_g2-13B" ),
+c("llama_2_70b_Q5_0", "llama_g2-70B"),
+c("llama_2_7b_Q8_0", "llama_g2-07B"),
+c("llama_30b_Q8_0", "llama_g1-30B"),
+c("llama_65b_Q5_0", "llama_g1-65B"),
+c("llama_7b_Q8_0","llama_g1-07B"),
+c("Meta_Llama_3_1_70B_Q5_K_M", "llama_g3.1-70B"),
+c("meta_llama_3_1_8b_q8_0","llama_g3.1-08B"),
+c("mistral_7b_v0_1_Q8_0", "mistral_g1-07B"),
+c("Mistral_7B_v0_3_Q8_0", "mistral_g3-07B"))
+
+for (i in (1:nrow(nice_names))){
+  dRl$model<-gsub(nice_names[i,1], nice_names[i,2], dRl$model)
+}
+
+dRl <- sort_by(dRl, dRl$model)
+table(dRl$model)
+
+p_llms <- ggplot(dRl, aes(x=model, y=dBICA, color = measure,  shape = case)) + 
+  geom_point(size = 3) +
+  scale_shape_manual(values = c(7,0)) +  # Square, Circle, Filled Dot, Diamond
+  labs(x = "", 
+       y= expression(Delta * "BIC"),
+       title = "LLMs and GLoVE") +
+#    geom_jitter(shape=16, position=position_jitter(0.3))+
+ # scale_fill_brewer(palette="RdBu") + 
+  #scale_color_gradient(low = "lightgreen", high = "darkgreen") +
+  scale_color_manual(values = c("yellow", "red","purple")) +  # Three colors for three measures levels
+   scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
+  theme(axis.text.y = element_text(size = rel(1.1), angle = 0))+
+  theme(axis.text.x = element_text(size = rel(1.), angle = 90))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
+        panel.grid.major = element_line(size = 0.5),
+        panel.grid.minor = element_line(size = 0.25))
+p_llms
+w_img=2000
+h_img=2000
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X2_BIC_llms", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+
+
+```
+
+```{r}
+# getBIC(d_BIC, "ukwac", "A") 
+#ukwac best for baseline
+
+dRl<-dR[dR$family=="predict" & dR$measure=="cos",]
+dRl$model<-sub("gram", "", dRl$model)
+table(dRl$model)
+dRl$model <- paste(dRl$model, dRl$embedding_size, sep = " ")
+
+p_predict <- ggplot(dRl, aes(x=model, y=dBICA, color = corpora,  shape = window_radius)) + 
+  geom_point(size = 3) +
+  scale_shape_manual(values = c(1, 2, 5, 6 )) + 
+  labs(x = "", 
+       y= expression(Delta * "BIC"),
+       title = "predict") +
+#    geom_jitter(shape=16, position=position_jitter(0.3))+
+ # scale_fill_brewer(palette="RdBu") + 
+  #scale_color_gradient(low = "lightgreen", high = "darkgreen") +
+  scale_color_manual(values = c("orange", "blue", "darkgreen")) +  # Three colors for three corpora levels
+   scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
+  theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
+  theme(axis.text.x = element_text(size = rel(1), angle = 0))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
+        panel.grid.major = element_line(size = 0.5),
+        panel.grid.minor = element_line(size = 0.25))
+p_predict
+w_img=2000
+h_img=2000
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X2_BIC_predict", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+
+
+```
+```{r}
+# getBIC(d_BIC, "ukwac", "A") 
+#ukwac best for baseline
+
+dRl<-dR[dR$family=="count"& dR$pretrained==0 &  dR$measure == "cos", ]
+table(dRl$model)
+dRl$model<-sub("_None", "", dRl$model)
+dRl$model<-sub("conditional", "cond", dRl$model)
+
+
+p_count <- ggplot(dRl, aes(x=model, y=dBICA, color = corpora,  shape = window_radius)) + 
+  geom_point(size = 3) +
+  scale_shape_manual(values = c(1, 2, 5, 6 )) + 
+  labs(x = "", 
+       y= expression(Delta * "BIC"),
+       title = "count") +
+#
+#    geom_jitter(shape=16, position=position_jitter(0.3))+
+ # scale_fill_brewer(palette="RdBu") + 
+  #scale_color_gradient(low = "lightgreen", high = "darkgreen") +
+   scale_color_manual(values = c("orange", "blue", "darkgreen")) +  # Three colors for three corpora levels
+   scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
+  theme(axis.text.y = element_text(size = rel(1.1), angle = 0))+
+  theme(axis.text.x = element_text(size = rel(0.8), angle = 0))+
+  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid = element_line(color = "grey90"),
+        axis.line = element_line(color= "grey"),
+        plot.title = element_text(hjust = 0.5),
+        plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
+        panel.grid.major = element_line(size = 0.5),
+        panel.grid.minor = element_line(size = 0.25))
+
+p_count
+w_img=2000
+h_img=2000
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X2_BIC_count", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+
+
+```
+```{r}
+
+# Combine the plots 
+combined_plot <- p_ngram / p_count /p_predict / p_llms  +
+  plot_layout(guides = "collect")+
+  plot_annotation(tag_levels = "A")
+
+
+# Display the combined plot
+combined_plot
+
+ggsave(paste0(path,"/Step_05/out_05_Summary_Figures_",model_type,"/X5_4BIC_fig_", model_type,min_BICf,"_", max_BICf,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+```
