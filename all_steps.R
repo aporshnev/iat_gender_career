@@ -13,15 +13,15 @@ library(performance)
 library(ggplot2)
 library(cowplot)
 
-start_year<-2019
-finish_year<-2019
+start_year<-2005
+finish_year<-2021
 
 setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check")
 path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check"
 
 render_report = function(path, file_name) {
   rmarkdown::render(paste0(path,file_name, ".RmD"), params = list(path = path, start_year, finish_year, model_type="classic"),
-  output_file = paste0(path, file_name, start_year,"-", finish_year,".html")
+  output_file = paste0(path, file_name, "_",start_year,"-", finish_year,".html")
   )
 }
 
@@ -33,10 +33,8 @@ analysis_structure<-c(
 #           "/Step_01/01b_split_data",
 #           "/Step_02/02_mean_RT_for_stimuli_AB_sample_testing",
            "/Step_02/02a_merge_RT",
-           "/Step_03/03_extend_RT"
-  ,
-  "/Step_04/04_LDM_models"
-  ,
+           "/Step_03/03_extend_RT",
+  "/Step_04/04_LDM_models",
             "/Step_05/05_summary_report"
             )
 dir_structure<-c("Step_01/out_1_Clean/",
@@ -81,5 +79,9 @@ start_year<-y
 finish_year<-y
 render_report(path, "/Step_05/05_summary_report")
 }
+
+start_year<-2005
+finish_year<-2021
+render_report(path, "/Step_05/05_summary_report")
 
 
