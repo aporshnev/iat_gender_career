@@ -22,7 +22,7 @@ knitr::opts_chunk$set(echo = FALSE, asis = TRUE)
 #path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check/"
 #setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/Jul24_stage4/")
 #start_year<-2005
-#finish_year<-20
+#finish_year<-2021
 #model_type<-"classic"
 
 path_out_figures<-paste0(path, "/Step_05/out_05_Summary_", model_type,"/", start_year,"-", finish_year,"/")
@@ -183,7 +183,7 @@ dR$embedding_size[grep(i,dR$lmd_A)]<-"300"}
 table_out(dR$embedding_size, "Embedding size")
 llm_list<-cbind(llms, rep("llm",length(llms)), rep(1,length(llms)))
 
-
+# 1 for models  included in Figures and Tables, 0 for excluded models
 t_mdls<-rbind(c("_cbow","predict", 1),
           c("_skipgram","predict", 1),
           llm_list,
@@ -486,13 +486,13 @@ c<-c + guides(colour="none")
 
 
 cowplot::plot_grid(c,c1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
-ggsave(paste0(path_out_figures, "F21_Cor_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "aux_Cor_All_Top_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 
 cowplot::plot_grid(p,p1, align = "hv", ncol = 1, rel_heights = c(3/5, 2/5))
-ggsave(paste0(path_out_figures, "F43_BIC_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "aux_BIC_All_Top_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 
 cowplot::plot_grid(c,c1,p,p1, align = "hv", ncol = 2, rel_heights = c(1/2, 1/2), labels = c("a", "b", "c","d"))
-ggsave(paste0(path_out_figures, "F5_COR_BIC", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures, "aux_COR_BIC_All_Top_", model_type,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 
 
 
@@ -548,7 +548,7 @@ p_ngram
 
 w_img=2000
 h_img=2000
-ggsave(paste0(path_out_figures,"/X1_BIC_ngram_", model_type,"_", min_BICf,"_", max_BICf, ".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/F5_BIC_ngram_", model_type,"_", min_BICf,"_", max_BICf, ".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 ```
 
 ## logFrequency in Ukwac in baseline has lower BIC (we will keep it as baseline for pretrained models)
@@ -592,7 +592,7 @@ p_llms <- ggplot(dRl, aes(x=model, y=dBICA, color = measure,  shape = case)) +
 p_llms
 w_img=2000
 h_img=2000
-ggsave(paste0(path_out_figures,"/X2_BIC_llms", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/F7_BIC_llms", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 
 
 ```
@@ -628,7 +628,7 @@ p_predict <- ggplot(dRp, aes(x=model, y=dBICA, color = measure,  shape = window_
 scale_color_manual(values = scale_color_measures) +  # Three colors for three measures
    scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
   theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
-  theme(axis.text.x = element_text(size = rel(0.5), angle = 0))+
+  theme(axis.text.x = element_text(size = rel(1.3), angle = 90))+
   theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
   theme(legend.position=legend_pos)+
   theme(panel.background = element_rect(fill = "white"),
@@ -641,7 +641,7 @@ scale_color_manual(values = scale_color_measures) +  # Three colors for three me
 print(p_predict)
 w_img=2000
 h_img=2000
-ggsave(paste0(path_out_figures,"/X2_BIC_predict_measures", title,"_", family, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/aux_BIC_", title,"_", family, "_", model_type,"_", min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 return (p_predict)
 }
 
@@ -671,7 +671,7 @@ p_predict <- ggplot(dRp, aes(x=model, y=dBICA, color = corpora,  shape = window_
 scale_color_manual(values = scale_color_corpora) +  # Three colors for three measures
    scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
   theme(axis.text.y = element_text(size = rel(1.1), angle = 90))+
-  theme(axis.text.x = element_text(size = rel(0.5), angle = 0))+
+  theme(axis.text.x = element_text(size = rel(1.3), angle = 90))+
   theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
   theme(legend.position=legend_pos)+
   theme(panel.background = element_rect(fill = "white"),
@@ -684,13 +684,14 @@ scale_color_manual(values = scale_color_corpora) +  # Three colors for three mea
 print(p_predict)
 w_img=2000
 h_img=2000
-ggsave(paste0(path_out_figures,"/X2_BIC_predict_measures", title,"_", family, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )}
+ggsave(paste0(path_out_figures,"/aux_BIC_", title,"_", family, "_", model_type,"_",min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )}
 return (p_predict)
 }
 ```
 
 
 ```{r}
+#---------------
 p1<-plot_BIC_measure(dR,"predict", "cos", "right")
 p2<-plot_BIC_measure(dR,"predict", "euc", "right")
 p3<-plot_BIC_measure(dR,"predict", "cor", "right")
@@ -702,7 +703,11 @@ combined_plot <- p1 + p2 + p3 +
 combined_plot
 family<-"predict"
 title<-"measures"
-ggsave(paste0(path_out_figures,"/X2_all_BIC_", title,"_", family, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/aux_3BIC_", title,"_", family, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
+
+#---------------
+family<-"predict"
+title<-"corpora"
 
 p1<-plot_BIC_measure(dR,"predict", "ukwac")
 p2<-plot_BIC_measure(dR,"predict", "bnc")
@@ -711,13 +716,12 @@ p3<-plot_BIC_measure(dR,"predict", "subtitles")
 combined_plot <- p1 + p2 +  p3  + 
    plot_layout(guides = "collect")+
    plot_annotation(tag_levels = "A")
-family<-"predict"
-title<-"corpora"
-ggsave(paste0(path_out_figures,"/X2_all_BIC_", title,"_", family, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
 
+ggsave(paste0(path_out_figures,"/F4_3BIC_", title,"_", family, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
 
+#---------------
 family_sel<-"count"
-
+title<-"measures"
 p1<-plot_BIC_measure(dR,family_sel, "cos", "right")
 p2<-plot_BIC_measure(dR,family_sel, "euc", "right")
 p3<-plot_BIC_measure(dR, family_sel, "cor", "right")
@@ -727,8 +731,11 @@ combined_plot <- p1 + p2 + p3 +
    plot_annotation(tag_levels = "A")
 
 combined_plot
-title<-"measures"
-ggsave(paste0(path_out_figures,"/X2_all_BIC_", title,"_", family_sel, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/aux_3BIC_", title,"_", family_sel, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
+
+#---------------
+family_sel<-"count"
+title<-"corpora"
 
 p1<-plot_BIC_measure(dR,family_sel, "ukwac")
 p2<-plot_BIC_measure(dR,family_sel, "bnc")
@@ -738,69 +745,65 @@ combined_plot <- p1 + p2 + p3 +
    plot_layout(guides = "collect")+
    plot_annotation(tag_levels = "A")
 
-title<-"corpora"
-ggsave(paste0(path_out_figures,"/X2_all_BIC_", title,"_", family_sel, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
+ggsave(paste0(path_out_figures,"/F6_3BIC_", title,"_", family_sel, "_", model_type,min_BICf,"_", max_BICf,".png"),width = w_img*3, height  = h_img, units = "px", dpi = 300 )
 ```
 
 
 
 
 ```{r}
-# getBIC(d_BIC, "ukwac", "A") 
-#ukwac best for baseline
+# # getBIC(d_BIC, "ukwac", "A") 
+# #ukwac best for baseline
+# 
+# dRl<-dR[dR$family=="count"&   dR$measure == "cos", ]
+# #table(dRl$lmd_A)
+# dRl$model<-sub("_None", "", dRl$model)
+# dRl$model<-sub("conditional", "cond", dRl$model)
+# 
+# 
+# p_count <- ggplot(dRl, aes(x=model, y=dBICA, color = corpora,  shape = window_radius)) + 
+#   geom_point(size = 3, position = "jitter") +
+# #  geom_jitter(alpha = 0.1)+ #position = position_jitter(width = 0.1, height = 0.1))+
+#   scale_shape_manual(values = shapes_window_radius) + 
+#   labs(x = "", 
+#        y= expression(Delta * "BIC"),
+#        title = "count") +
+# #
+# #    geom_jitter(shape=16, position=position_jitter(0.3))+
+#  # scale_fill_brewer(palette="RdBu") + 
+#   #scale_color_gradient(low = "lightgreen", high = "darkgreen") +
+#    scale_color_manual(values = scale_color_corpora) +  # Three colors for three corpora levels
+#    scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
+#   theme(axis.text.y = element_text(size = rel(1.1), angle = 0))+
+#   theme(axis.text.x = element_text(size = rel(0.8), angle = 0))+
+#   theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
+#   theme(panel.background = element_rect(fill = "white"),
+#         panel.grid = element_line(color = "grey90"),
+#         axis.line = element_line(color= "grey"),
+#         plot.title = element_text(hjust = 0.5),
+#         plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
+#         panel.grid.major = element_line(size = 0.5),
+#         panel.grid.minor = element_line(size = 0.25))
+# 
+# p_count
+# w_img=2000
+# h_img=2000
+# ggsave(paste0(path_out_figures,"/X2_BIC_count", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
 
-dRl<-dR[dR$family=="count"&   dR$measure == "cos", ]
-#table(dRl$lmd_A)
-dRl$model<-sub("_None", "", dRl$model)
-dRl$model<-sub("conditional", "cond", dRl$model)
 
-
-p_count <- ggplot(dRl, aes(x=model, y=dBICA, color = corpora,  shape = window_radius)) + 
-  geom_point(size = 3, position = "jitter") +
-#  geom_jitter(alpha = 0.1)+ #position = position_jitter(width = 0.1, height = 0.1))+
-  scale_shape_manual(values = shapes_window_radius) + 
-  labs(x = "", 
-       y= expression(Delta * "BIC"),
-       title = "count") +
+```
+```{r}
+# # Combine the plots
+# combined_plot <- p_ngram / p_count+
+#   plot_layout(guides = "collect")+
+#   plot_annotation(tag_levels = "A")#
 #
-#    geom_jitter(shape=16, position=position_jitter(0.3))+
- # scale_fill_brewer(palette="RdBu") + 
-  #scale_color_gradient(low = "lightgreen", high = "darkgreen") +
-   scale_color_manual(values = scale_color_corpora) +  # Three colors for three corpora levels
-   scale_y_continuous(limits = c(min_BICf, max_BICf)) +  # Y-axis from -10 to +10
-  theme(axis.text.y = element_text(size = rel(1.1), angle = 0))+
-  theme(axis.text.x = element_text(size = rel(0.8), angle = 0))+
-  theme(axis.title.y = element_text(size = rel(1.1), angle = 90))+
-  theme(panel.background = element_rect(fill = "white"),
-        panel.grid = element_line(color = "grey90"),
-        axis.line = element_line(color= "grey"),
-        plot.title = element_text(hjust = 0.5),
-        plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
-        panel.grid.major = element_line(size = 0.5),
-        panel.grid.minor = element_line(size = 0.25))
-
-p_count
-w_img=2000
-h_img=2000
-ggsave(paste0(path_out_figures,"/X2_BIC_count", model_type,min_BICf,"_", max_BICf,".png"),width = w_img, height  = h_img, units = "px", dpi = 300 )
-
-
-```
-```{r}
-
-
-
- # Combine the plots 
- combined_plot <- p_ngram / p_count+ 
-   plot_layout(guides = "collect")+
-   plot_annotation(tag_levels = "A")
-
-combined_plot
+#combined_plot
 #
 
 # #/p_predict + p_llms  +
 # # Display the combined plot
 # combined_plot
-# 
+#
 # ggsave(paste0(path_out_figures,"/X5_4BIC_fig_", model_type,min_BICf,"_", max_BICf,".png"),width =2400, height  = 3200,  units = "px", dpi = 300 )
 ```
