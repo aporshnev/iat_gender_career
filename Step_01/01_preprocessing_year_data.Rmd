@@ -106,9 +106,6 @@ return (p_check[,c("session_id", "D")])
 ```
 
 ```{r}
-year<-2005
-t_prev_year_check<-NULL
-
 preprocess<-function(year, t_prev_year_check){
 stats<-NULL
 stats<-cbind(stats, year = year)
@@ -357,9 +354,19 @@ return (t_prev_year_check)
  
  
 ```{r}
+dir_structure<-c("Step_01/out_1_Clean/",
+                 "Step_01/out_1a_Clean_noexp/",
+                 "Step_01/out_1b_Split/",
+                 "Step_01/out_1a_Stats/",
+                 "Step_01/out_1_Stats/")
+dir_structure<-paste0(dir_structure, start_year,"-", finish_year,"/")
+for (d in dir_structure){
+ dir.create(file.path(path, d), showWarnings = FALSE)
+}
+
 md.log("Start preprocessing", file="preprocessing.log", append =FALSE, time = TRUE, sys.info = FALSE)
-t_prev <- NULL
-i<-2005
+t_prev <- NULL 
+
 for(i in 2005:2021)
 {
   md.log("------------")

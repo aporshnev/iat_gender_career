@@ -24,8 +24,7 @@ print_ttest<-function(out, add_caption =""){
 
 
 ```{r print_table_function, echo = FALSE, results = 'asis', warning = FALSE}
-#year<-2005
-#t_data_d<-t_data_SN_US
+
 print_tables<-function(t_data_d, year, incl_errors = TRUE){
 add_caption <- ""
 if (incl_errors == FALSE) {
@@ -129,6 +128,7 @@ describe_clean_data_RT<-function(year){
 ```{r main, echo = FALSE, results = 'asis', warning = FALSE}
 dir_structure<-c("Step_02/out_2_RT/",
                  "Step_02/out_2a_RT_merged/")
+dir_structure<-paste0(dir_structure, start_year,"-", finish_year,"/")
 
 for (d in dir_structure){
 dir.create(file.path(path, d), showWarnings = FALSE)

@@ -19,8 +19,6 @@ library(performance)
 ```
 
 ```{r}
-#setwd("..")
-#path = getwd()
 dir_structure<-c("Step_03/out_3_EXT_RT/", start_year,"-", finish_year,"/")
 
 for (d in dir_structure){
