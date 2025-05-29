@@ -44,7 +44,7 @@ analysis_structure<-c(
 #           "/Step_01/01b_split_data",
 #           "/Step_02/02_mean_RT_for_stimuli_AB_sample_testing",
 #           "/Step_02/02a_merge_RT",
-#           "/Step_03/03_extend_RT",
+            "/Step_03/03_extend_RT",
             "/Step_04/04_LDM_models",
             "/Step_05/05_summary_report"
             )
