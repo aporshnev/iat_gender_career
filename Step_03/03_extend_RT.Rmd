@@ -19,7 +19,7 @@ library(performance)
 ```
 
 ```{r}
-dir_structure<-c("Step_03/out_3_EXT_RT/", start_year,"-", finish_year,"/")
+dir_structure<-c("Step_03/out_3_EXT_RT/", paste0("Step_03/out_3_EXT_RT/", start_year,"-", finish_year,"/"))
 
 for (d in dir_structure){
 dir.create(file.path(path, d), showWarnings = FALSE)

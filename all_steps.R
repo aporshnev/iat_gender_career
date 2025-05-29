@@ -13,7 +13,10 @@ packages_setup<-c("dplyr",
                   "ggplot2",
                   "cowplot",
                   "patchwork",
-                  "ggpubr") 
+                  "ggpubr",
+                  "rmarkdown")
+
+library(rmarkdown)
 
 #Check if packages are installed and install if needed
 for (p in packages_setup){
@@ -23,16 +26,15 @@ for (p in packages_setup){
 }
 
 #Constants for years of analysis
-
 start_year<-2005
 finish_year<-2021
-
-#setwd("C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check")
-#path<-"C:/Alex/Maynooth/IAT/Gender-Career/Analysis/git_for_replication/S3_5_full_check"
+path<-getwd()  
+model_type="classic" 
+#[TBD] check RmD files and replace variables with params$start_year & params$finish_year, params$path, params$model_type
 
 #Main report function
 render_report = function(path, file_name) {
-  rmarkdown::render(paste0(path,file_name, ".RmD"), params = list(path = path, start_year, finish_year, model_type="classic"),
+  rmarkdown::render(paste0(path, file_name, ".RmD"), params = list(path = path, start_year, finish_year, model_type="classic"),
   output_file = paste0(path, file_name, "_",start_year,"-", finish_year,".html")
   )
 }
