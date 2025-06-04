@@ -6,6 +6,8 @@ packages_setup<-c("dplyr",
                   "data.table",
                   "tidyr",
                   "lme4",
+		              "nloptr",
+		              "phyr",
                   "flexmix",
                   "sjPlot",
                   "stringr",
@@ -16,14 +18,43 @@ packages_setup<-c("dplyr",
                   "ggpubr",
                   "rmarkdown")
 
-library(rmarkdown)
+options(repos = c(CRAN = "https://cloud.r-project.org"))
 
 #Check if packages are installed and install if needed
-for (p in packages_setup){
-  if (!requireNamespace(p)) {
-    install.packages(p)
+# for (p in packages_setup){
+#   if (!requireNamespace(p)) {
+#     install.packages(p)
+#   }
+# }
+
+# Initialize a list to track failed installs
+failed_packages <- c()
+
+# Check if packages are installed and install if needed
+for (p in packages_setup) {
+  if (!requireNamespace(p, quietly = TRUE)) {
+    message("Installing package: ", p)
+    tryCatch({
+      install.packages(p, dependencies = TRUE)
+      # Re-check if it’s installed after installation
+      if (!requireNamespace(p, quietly = TRUE)) {
+        failed_packages <- c(failed_packages, p)
+      }
+    }, error = function(e) {
+      failed_packages <- c(failed_packages, p)
+    })
   }
 }
+
+# Print the list of failed packages
+if (length(failed_packages) > 0) {
+  message("The following packages failed to install: ", paste(failed_packages, collapse = ", "))
+} else {
+  message("All packages installed successfully!")
+}
+
+
+library("rmarkdown")
 
 #Constants for years of analysis
 start_year<-2005
