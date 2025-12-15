@@ -855,7 +855,7 @@ p_predict <- ggplot(dRp, aes(x=model, y=dBICA, fill = color_shape,  shape = colo
         axis.line = element_line(color= "grey"),
         plot.title = element_text(hjust = 0.5),
         plot.margin = margin(t = 10, r = 10, b = 50, l = 10, unit = "pt"),  # Increased bottom margin
-        panel.grid.major = element_line(size = 0.5),
+        panel.grid.major = element_line(size = 0.7),
                    axis.line.x = element_blank(),
      panel.grid.minor = element_blank())
 print(p_predict)
